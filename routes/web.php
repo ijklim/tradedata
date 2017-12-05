@@ -14,3 +14,6 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::resource('stock', 'StockController');
+Route::resource('stockprice', 'StockPriceController');
