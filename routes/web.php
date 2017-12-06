@@ -11,9 +11,20 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', 'StockController@index');
 
-Route::resource('stock', 'StockController');
-Route::resource('stockprice', 'StockPriceController');
+Route::resource(
+    'stock',
+    StockController::class,
+    [
+        'only' => ['edit', 'index', 'create', 'show', 'store', 'update']
+    ]
+);
+
+Route::resource(
+    'stock-price',
+    StockPriceController::class,
+    [
+        'only' => ['index', 'show']
+    ]
+);

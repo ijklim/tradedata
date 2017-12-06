@@ -25,7 +25,7 @@ class StockController extends Controller
      */
     public function create()
     {
-        //
+        return view('stock.change', ['mode' => 'create']);
     }
 
     /**
@@ -36,51 +36,89 @@ class StockController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $stock = new Stock;
+        $stock->symbol = strtoupper($request->symbol);
+        $stock->name = $request->name;
+        $stock->save();
+
+        return redirect()
+                ->route('stock.index')
+                ->with('success', $request->symbol.' added successfully.');
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Stock  $stock
+     * @param  string  $symbol
      * @return \Illuminate\Http\Response
      */
-    public function show(Stock $stock)
+    public function show(string $symbol)
     {
-        //
+        $stocks = [$this->findBySymbol($symbol)];
+        return view('stock.index', compact('stocks'));
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Stock  $stock
+     * @param  string  $symbol
      * @return \Illuminate\Http\Response
      */
-    public function edit(Stock $stock)
+    public function edit(string $symbol)
     {
-        //
+        return view(
+            'stock.change', 
+            [
+                'mode' => 'edit',
+                'stock' => $this->findBySymbol($symbol)
+            ]
+        );
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Stock  $stock
+     * @param  string  $symbol
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Stock $stock)
+    public function update(Request $request, string $symbol)
     {
-        //
+        // dd($request->symbol);
+        $stock = $this->findBySymbol($symbol);
+        $status = $stock->update([
+            'symbol' => $request->symbol,
+            'name' => $request->name
+        ]);
+        if ($status) {
+            // Show update info
+            return redirect()->route('stock.show', ['symbol' => $symbol]);
+        } else {
+            // Back to edit page
+            return back()->withInput();
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Stock  $stock
+     * @param  string  $symbol
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Stock $stock)
+    public function destroy(string $symbol)
     {
-        //
+        // $status = Stock::where('symbol', strtoupper($symbol))->delete();
+        $status = DB::table('stocks')->where('symbol', strtoupper('rut'))->delete();
+        return $status;
+    }
+
+    /**
+     * Find stock by primary key symbol.
+     *
+     * @param  string  $symbol
+     * @return \App\Stock
+     */
+    public function findBySymbol(string $symbol) {
+        return Stock::where('symbol', strtoupper($symbol))->get()->first();
     }
 }
