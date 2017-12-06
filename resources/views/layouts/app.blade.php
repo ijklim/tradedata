@@ -18,6 +18,7 @@
             margin-top: 70px;
         }
         
+        input[type=submit]:hover,
         button:hover {
             cursor: pointer;
         }
@@ -25,7 +26,8 @@
 </head>
 <body>
     <div id='app' class='container'>
-        @extends('layouts.nav')
+        @include('layouts.nav')
+        @include('partials.alert')
         <div class='row'>
             @yield('content')
         </div>
