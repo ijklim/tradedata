@@ -12,9 +12,20 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+
+    <style>
+        body {
+            margin-top: 70px;
+        }
+        
+        button:hover {
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <div class='container'>
+    <div id='app' class='container'>
+        @extends('layouts.nav')
         <div class='row'>
             @yield('content')
         </div>
