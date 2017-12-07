@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 class StockController extends Controller
 {
     protected $stocks;
+    protected $validationRules;
 
     /**
      * Create a new controller instance.
@@ -18,6 +19,10 @@ class StockController extends Controller
     public function __construct(Stock $stocks)
     {
         $this->stocks = $stocks;
+        $this->validationRules = [
+            'symbol' => 'required|max:5',
+            'name' => 'required|min:5'
+        ];
     }
 
     /**
@@ -48,32 +53,16 @@ class StockController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request, [
-            'symbol' => 'required|max:5',
-            'name' => 'required|min:5'
-        ]);
+        $this->validate($request, $this->validationRules);
 
         try {
-            // $stock = new Stock;
-            // $stock->symbol = strtoupper($request->symbol);
-            // $stock->name = $request->name;
-            // $status = $stock->save();
-            $status = Stock::create([
+            Stock::create([
                 'symbol' => strtoupper($request->symbol),
                 'name' => $request->name
             ]);
-        } catch (\Illuminate\Database\QueryException $e) {
-            $status = false;
-            $errorMessage = $request->symbol.' cannot be added. Error: '.$e->errorInfo[2];
-        } catch (\Exception $e) {
-            $status = false;
-            $errorMessage = $request->symbol.' cannot be added. Please try again.';
-        }
-
-        if ($status) {
             return redirect()->route('stock.index')->with('success', $request->symbol.' added successfully.');
-        } else {
-            // Back to add page
+        } catch (\Exception $e) {
+            $errorMessage = $this->processError($e, $request->symbol);
             return back()->withInput()->with('error', $errorMessage);
         }
     }
@@ -115,17 +104,19 @@ class StockController extends Controller
      */
     public function update(Request $request, Stock $stock)
     {
-        $status = $stock
-                    ->update([
-                        'symbol' => strtoupper($request->symbol),
-                        'name' => $request->name
-                    ]);
-        if ($status) {
+        $this->validate($request, $this->validationRules);
+
+        try {
+            $stock->update([
+                'symbol' => strtoupper($request->symbol),
+                'name' => $request->name
+            ]);
             // Show update info
-            return redirect()->route('stock.index')->with('success', $stock->symbol.' updated successfully.');
-        } else {
+            return redirect()->route('stock.index')->with('success', $stock->symbol . ' updated successfully.');
+        } catch (\Exception $e) {
+            $errorMessage = $this->processError($e, $request->symbol);
             // Back to edit page
-            return back()->withInput()->with('error', $stock->symbol.' cannot be updated, please try again.');
+            return back()->withInput()->with('error', $errorMessage);
         }
     }
 
@@ -140,10 +131,34 @@ class StockController extends Controller
         $status = $stock->delete();
         if ($status) {
             // Back to index page
-            return redirect()->route('stock.index')->with('success', $stock->symbol.' deleted successfully.');
+            return redirect()->route('stock.index')->with('success', $stock->symbol . ' deleted successfully.');
         } else {
             // Back to edit page
-            return back()->with('error', $stock->symbol.' cannot be deleted, please try again.');
+            return back()->with('error', $stock->symbol . ' cannot be deleted, please try again.');
+        }
+    }
+
+
+    /**
+     * Process error and return appropriate message.
+     *
+     * @param  Exception  $error
+     * @param  string  $symbol
+     * @return string
+     */
+    private function processError($error, $symbol) {
+        if ($error instanceof \Illuminate\Database\QueryException) {
+            switch ($error->errorInfo[2]) {
+                case 'UNIQUE constraint failed: stocks.symbol':
+                    return "$symbol is already in the system, please enter another symbol.";
+                    break;
+                default:
+                    return 'Error detected: ' . $error->errorInfo[2];
+                    break;
+            }
+        } else {
+            // Should not end up here
+            return 'Error detected, please try again.';
         }
     }
 }
