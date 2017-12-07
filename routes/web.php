@@ -14,6 +14,7 @@
 Route::get('/', 'StockController@index');
 
 Route::resource('stock', StockController::class);
+Route::resource('data-source', DataSourceController::class);
 
 Route::resource(
     'stock-price',
