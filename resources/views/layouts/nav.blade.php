@@ -10,7 +10,10 @@
                 <a class="nav-link" href="/">Home</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/stock/create">Create Stock</a>
+                <a class="nav-link" href="/stock">Stocks</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/data-source">Data Sources</a>
             </li>
         </ul>
     </div>
