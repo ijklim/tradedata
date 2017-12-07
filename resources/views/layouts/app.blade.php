@@ -22,6 +22,24 @@
         button:hover {
             cursor: pointer;
         }
+
+        /* Add Button */
+        .button--bottom-float {
+            font-family: Arial;
+            font-size: 3rem;
+            line-height:1.2rem;
+            height: 3.5rem;
+            width: 3.5rem;
+
+            background-color: #db4437;
+            color: white;
+            box-shadow: 0 6px 10px 0 rgba(0,0,0,0.14),0 1px 18px 0 rgba(0,0,0,0.12),0 3px 5px -1px rgba(0,0,0,0.2);
+
+            position: absolute;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
