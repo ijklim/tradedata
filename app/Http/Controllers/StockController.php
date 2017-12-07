@@ -107,9 +107,14 @@ class StockController extends Controller
      */
     public function destroy(string $symbol)
     {
-        // $status = Stock::where('symbol', strtoupper($symbol))->delete();
-        $status = DB::table('stocks')->where('symbol', strtoupper('rut'))->delete();
-        return $status;
+        $status = Stock::where('symbol', strtoupper($symbol))->delete();
+        if ($status) {
+            // Back to index page
+            return redirect()->route('stock.index')->with('success', $symbol.' deleted successfully.');
+        } else {
+            // Back to edit page
+            return back()->with('error', $symbol.' cannot be deleted, please try again.');
+        }
     }
 
     /**

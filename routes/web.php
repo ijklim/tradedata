@@ -17,7 +17,7 @@ Route::resource(
     'stock',
     StockController::class,
     [
-        'only' => ['edit', 'index', 'create', 'show', 'store', 'update']
+        'only' => ['edit', 'index', 'create', 'destroy', 'show', 'store', 'update']
     ]
 );
 

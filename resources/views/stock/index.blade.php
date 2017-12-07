@@ -25,6 +25,15 @@
                             >
                                 Edit
                             </button>
+                            {{
+                                Form::open([
+                                    'method' => 'DELETE',
+                                    'route' => ['stock.destroy', $stock->symbol],
+                                    'class' => 'd-inline'
+                                ])
+                            }}
+                                {{ Form::submit('Delete', ['class' => 'btn btn-danger']) }}
+                            {{ Form::close() }}
                         </div>
                     </div>
                 </div>
