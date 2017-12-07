@@ -54,7 +54,7 @@ class StockController extends Controller
      */
     public function show(string $symbol)
     {
-        $stocks = [$this->findBySymbol($symbol)];
+        $stocks = Stock::where('symbol', strtoupper($symbol))->get();
         return view('stock.index', compact('stocks'));
     }
 
@@ -70,7 +70,7 @@ class StockController extends Controller
             'stock.change', 
             [
                 'mode' => 'edit',
-                'stock' => $this->findBySymbol($symbol)
+                'stock' => Stock::where('symbol', strtoupper($symbol))->get()->first()
             ]
         );
     }
@@ -84,15 +84,14 @@ class StockController extends Controller
      */
     public function update(Request $request, string $symbol)
     {
-        // dd($request->symbol);
-        $stock = $this->findBySymbol($symbol);
-        $status = $stock->update([
-            'symbol' => $request->symbol,
-            'name' => $request->name
-        ]);
+        $status = Stock::where('symbol', strtoupper($symbol))
+                    ->update([
+                        'symbol' => strtoupper($request->symbol),
+                        'name' => $request->name
+                    ]);
         if ($status) {
             // Show update info
-            return redirect()->route('stock.show', ['symbol' => $symbol]);
+            return redirect()->route('stock.index')->with('success', $request->symbol.' updated successfully.');
         } else {
             // Back to edit page
             return back()->withInput();
@@ -115,15 +114,5 @@ class StockController extends Controller
             // Back to edit page
             return back()->with('error', $symbol.' cannot be deleted, please try again.');
         }
-    }
-
-    /**
-     * Find stock by primary key symbol.
-     *
-     * @param  string  $symbol
-     * @return \App\Stock
-     */
-    public function findBySymbol(string $symbol) {
-        return Stock::where('symbol', strtoupper($symbol))->get()->first();
     }
 }
