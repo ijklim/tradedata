@@ -13,13 +13,7 @@
 
 Route::get('/', 'StockController@index');
 
-Route::resource(
-    'stock',
-    StockController::class,
-    [
-        'only' => ['edit', 'index', 'create', 'destroy', 'show', 'store', 'update']
-    ]
-);
+Route::resource('stock', StockController::class);
 
 Route::resource(
     'stock-price',
