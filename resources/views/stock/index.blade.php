@@ -21,6 +21,12 @@
                             </button>
                             <button
                                 class='btn btn-primary'
+                                onclick='window.location = "/stock/{{ $stock->symbol }}"'
+                            >
+                                Show
+                            </button>
+                            <button
+                                class='btn btn-primary'
                                 onclick='window.location = "/stock/{{ $stock->symbol }}/edit"'
                             >
                                 Edit

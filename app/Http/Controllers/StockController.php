@@ -7,6 +7,19 @@ use Illuminate\Http\Request;
 
 class StockController extends Controller
 {
+    protected $stocks;
+
+    /**
+     * Create a new controller instance.
+     *
+     * @param  Stock  $stocks
+     * @return void
+     */
+    public function __construct(Stock $stocks)
+    {
+        $this->stocks = $stocks;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -14,8 +27,7 @@ class StockController extends Controller
      */
     public function index()
     {
-        $stocks = Stock::all();
-        return view('stock.index', compact('stocks'));
+        return view('stock.index', ['stocks' => $this->stocks::all()]);
     }
 
     /**
@@ -36,41 +48,60 @@ class StockController extends Controller
      */
     public function store(Request $request)
     {
-        $stock = new Stock;
-        $stock->symbol = strtoupper($request->symbol);
-        $stock->name = $request->name;
-        $stock->save();
+        $this->validate($request, [
+            'symbol' => 'required|max:5',
+            'name' => 'required|min:5'
+        ]);
 
-        return redirect()
-                ->route('stock.index')
-                ->with('success', $request->symbol.' added successfully.');
+        try {
+            // $stock = new Stock;
+            // $stock->symbol = strtoupper($request->symbol);
+            // $stock->name = $request->name;
+            // $status = $stock->save();
+            $status = Stock::create([
+                'symbol' => strtoupper($request->symbol),
+                'name' => $request->name
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            $status = false;
+            $errorMessage = $request->symbol.' cannot be added. Error: '.$e->errorInfo[2];
+        } catch (\Exception $e) {
+            $status = false;
+            $errorMessage = $request->symbol.' cannot be added. Please try again.';
+        }
+
+        if ($status) {
+            return redirect()->route('stock.index')->with('success', $request->symbol.' added successfully.');
+        } else {
+            // Back to add page
+            return back()->withInput()->with('error', $errorMessage);
+        }
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  string  $symbol
+     * @param  Stock  $stock
      * @return \Illuminate\Http\Response
      */
-    public function show(string $symbol)
+    public function show(Stock $stock)
     {
-        $stocks = Stock::where('symbol', strtoupper($symbol))->get();
-        return view('stock.index', compact('stocks'));
+        return view('stock.index', ['stocks' => array($stock)]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  string  $symbol
+     * @param  Stock  $stock
      * @return \Illuminate\Http\Response
      */
-    public function edit(string $symbol)
+    public function edit(Stock $stock)
     {
         return view(
             'stock.change', 
             [
                 'mode' => 'edit',
-                'stock' => Stock::where('symbol', strtoupper($symbol))->get()->first()
+                'stock' => $stock
             ]
         );
     }
@@ -79,40 +110,40 @@ class StockController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  string  $symbol
+     * @param  Stock  $stock
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, string $symbol)
+    public function update(Request $request, Stock $stock)
     {
-        $status = Stock::where('symbol', strtoupper($symbol))
+        $status = $stock
                     ->update([
                         'symbol' => strtoupper($request->symbol),
                         'name' => $request->name
                     ]);
         if ($status) {
             // Show update info
-            return redirect()->route('stock.index')->with('success', $request->symbol.' updated successfully.');
+            return redirect()->route('stock.index')->with('success', $stock->symbol.' updated successfully.');
         } else {
             // Back to edit page
-            return back()->withInput();
+            return back()->withInput()->with('error', $stock->symbol.' cannot be updated, please try again.');
         }
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  string  $symbol
+     * @param  Stock  $stock
      * @return \Illuminate\Http\Response
      */
-    public function destroy(string $symbol)
+    public function destroy(Stock $stock)
     {
-        $status = Stock::where('symbol', strtoupper($symbol))->delete();
+        $status = $stock->delete();
         if ($status) {
             // Back to index page
-            return redirect()->route('stock.index')->with('success', $symbol.' deleted successfully.');
+            return redirect()->route('stock.index')->with('success', $stock->symbol.' deleted successfully.');
         } else {
             // Back to edit page
-            return back()->with('error', $symbol.' cannot be deleted, please try again.');
+            return back()->with('error', $stock->symbol.' cannot be deleted, please try again.');
         }
     }
 }
