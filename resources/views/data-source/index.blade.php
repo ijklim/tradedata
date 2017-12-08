@@ -5,7 +5,11 @@
     $folderName = request()->path();                            // e.g. data-source
     $itemName = ucwords(str_replace('-', ' ', $folderName));    // e.g. Data Source
     $pageName = $itemName . 's';                                // e.g. Data Sources
-    //$items = $stocks ?? null;
+    $items = $dataSources ?? null;
+    $itemFields = [
+        'Domain Name' => 'domain_name',
+        'API Base Url' => 'api_base_url'
+    ];
 @endphp
 
 @section('content')
@@ -22,37 +26,18 @@
     </button>
     @if (isset($items))
         @foreach ($items as $item)
-            <div class="col-sm-6 col-md-4 mt-3">
+            <div class="col-sm-6 mt-3">
                 <div class='card border-dark'>
                     <div class="card-header text-white bg-dark">
                         {{ $item->getKeyValue() }}
                     </div>
                     <div class="card-body">
-                        <div>{{ $item->name }}</div>
-                        <div>Available Prices: {{ $item->stockprices()->get()->count() }}</div>
+                        @foreach ($itemFields as $itemKey => $itemField)
+                            <div>{{ $itemKey . ': ' . $item->$itemField }}</div>
+                        @endforeach
                     </div>
                     <div class="card-footer">
                         <div class='row'>
-                            <!-- Prices -->
-                            <div class='col px-1'>
-                                <button
-                                    class='btn btn-primary btn-block'
-                                    onclick='window.location = "/stock-price/{{ $item->symbol }}"'
-                                >
-                                    Prices
-                                </button>
-                            </div>
-
-                            <!-- Single stock only -->
-                            <div class='col px-1'>
-                            <button
-                                class='btn btn-primary btn-block'
-                                onclick='window.location = "/{!! $folderName !!}/{{ $item->symbol }}"'
-                            >
-                                Show
-                            </button>
-                            </div>
-
                             <!-- Edit -->
                             <div class='col px-1'>
                             <button
@@ -62,7 +47,7 @@
                                 Edit
                             </button>
                             </div>
-
+                            
                             <!-- Delete -->
                             <div class='col px-1'>
                             {{
