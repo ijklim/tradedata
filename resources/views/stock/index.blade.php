@@ -1,16 +1,8 @@
 @extends('layouts.app')
 
-@php
-    // Compute common variables
-    $folderName = request()->path();                            // e.g. data-source/1
-    $folderName = preg_split("_[\\\\/]_", $folderName)[0];      // e.g. data-source
-    $itemName = ucwords(str_replace('-', ' ', $folderName));    // e.g. Data Source
-    $pageName = $itemName . 's';                                // e.g. Data Sources
-@endphp
-
 @section('content')
     <h1 class="col-12 text-center">
-        {!! $pageName !!}
+        {!! $itemName . 's' !!}
     </h1>
     <!-- Add Button -->
     <button

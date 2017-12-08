@@ -14,7 +14,10 @@ trait Controller
      */
     public function index()
     {
-        return view($this->folderName . '.index', ['items' => $this->items::all()]);
+        return view(
+            $this->folderName . '.index',
+            $this->getViewParameters(['items' => $this->items::all()])
+        );
     }
 
     /**
@@ -24,7 +27,25 @@ trait Controller
      */
     public function create()
     {
-        return view($this->folderName . '.change', ['mode' => 'create']);
+        return view(
+            $this->folderName . '.change',
+            $this->getViewParameters(['mode' => 'create'])
+        );
+    }
+
+    /**
+     * Return a set of parameters to be passed to a view.
+     *
+     * @return array
+     */
+    private function getViewParameters($parameters = []) {
+        return array_merge(
+            [
+                'folderName' => $this->folderName,                                  // e.g. data-source 
+                'itemName' => ucwords(str_replace('-', ' ', $this->folderName))     // e.g. Data Source
+            ],
+            $parameters
+        );
     }
 
     /**

@@ -67,11 +67,8 @@ class DataSourceController extends Controller
     public function edit(DataSource $dataSource)
     {
         return view(
-            $this->folderName . '.change', 
-            [
-                'mode' => 'edit',
-                'dataSource' => $dataSource
-            ]
+            $this->folderName . '.change',
+            $this->getViewParameters(['mode' => 'edit', 'item' => $dataSource])
         );
     }
 

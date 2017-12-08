@@ -55,7 +55,10 @@ class StockController extends Controller
      */
     public function show(Stock $stock)
     {
-        return view($this->folderName . '.index', ['items' => array($stock)]);
+        return view(
+            $this->folderName . '.index',
+            $this->getViewParameters(['items' => array($stock)])
+        );
     }
 
     /**
@@ -68,10 +71,7 @@ class StockController extends Controller
     {
         return view(
             $this->folderName . '.change', 
-            [
-                'mode' => 'edit',
-                'stock' => $stock
-            ]
+            $this->getViewParameters(['mode' => 'edit', 'item' => $stock])
         );
     }
 

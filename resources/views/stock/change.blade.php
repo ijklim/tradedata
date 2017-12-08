@@ -1,12 +1,5 @@
 @extends('layouts.app')
 
-@php
-    // Compute common variables
-    $folderName = preg_split("_[\\\\/]_", request()->path())[0];    // e.g. Retrieve `stock` from `stock/RUT/edit`
-    $itemName = ucwords(str_replace('-', ' ', $folderName));        // e.g. Stock
-    $item = $stock ?? null;
-@endphp
-
 @section('content')
     <div class="col-sm-10 col-md-8 col-lg-6 mt-3 mx-auto">
         <div class='card border-dark'>
