@@ -2,29 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Stock;
+use App\DataSource;
 use Illuminate\Http\Request;
 
-class StockController extends Controller
+class DataSourceController extends Controller
 {
     use \App\Http\Controllers\Traits\Controller;
-
+    
     /**
      * Create a new controller instance.
      *
-     * @param  Stock  $items
+     * @param  \App\DataSource  $items
      * @return void
      */
-    public function __construct(Stock $items)
+    public function __construct(DataSource $items)
     {
         $this->items = $items;
         $this->folderName = $this->items::first()->getFolderName();
         $this->validationRules = [
-            'symbol' => 'required|max:5',
-            'name' => 'required|min:5'
+            'domain_name' => 'required|min:5',
+            'api_base_url' => 'required|min:10'
         ];
     }
-
+    
     /**
      * Store a newly created resource in storage.
      *
@@ -34,15 +34,15 @@ class StockController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, $this->validationRules);
-
+        
         try {
-            Stock::create([
-                'symbol' => strtoupper($request->symbol),
-                'name' => $request->name
+            DataSource::create([
+                'domain_name' => $request->domain_name,
+                'api_base_url' => $request->api_base_url
             ]);
-            return redirect()->route($this->folderName . '.index')->with('success', $request->symbol.' added successfully.');
+                return redirect()->route($this->folderName . '.index')->with('success', $request->domain_name.' added successfully.');
         } catch (\Exception $e) {
-            $errorMessage = $this->processError($e, $request->symbol);
+            $errorMessage = $this->processError($e, $request->domain_name);
             return back()->withInput()->with('error', $errorMessage);
         }
     }
@@ -50,27 +50,27 @@ class StockController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  Stock  $item
+     * @param  \App\DataSource  $dataSource
      * @return \Illuminate\Http\Response
      */
-    public function show(Stock $stock)
+    public function show(DataSource $dataSource)
     {
-        return view($this->folderName . '.index', ['items' => array($stock)]);
+        return $this->index();
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  Stock  $stock
+     * @param  \App\DataSource  $dataSource
      * @return \Illuminate\Http\Response
      */
-    public function edit(Stock $stock)
+    public function edit(DataSource $dataSource)
     {
         return view(
             $this->folderName . '.change', 
             [
                 'mode' => 'edit',
-                'stock' => $stock
+                'dataSource' => $dataSource
             ]
         );
     }
@@ -79,22 +79,22 @@ class StockController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  Stock  $stock
+     * @param  \App\DataSource  $dataSource
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Stock $stock)
+    public function update(Request $request, DataSource $dataSource)
     {
         $this->validate($request, $this->validationRules);
-
+        
         try {
-            $stock->update([
-                'symbol' => strtoupper($request->symbol),
-                'name' => $request->name
+            $dataSource->update([
+                'domain_name' => $request->domain_name,
+                'api_base_url' => $request->api_base_url
             ]);
             // Show update info
-            return redirect()->route($this->folderName . '.index')->with('success', $stock->symbol . ' updated successfully.');
+            return redirect()->route($this->folderName . '.index')->with('success', 'Data Source #' . $dataSource->id . ' updated successfully.');
         } catch (\Exception $e) {
-            $errorMessage = $this->processError($e, $request->symbol);
+            $errorMessage = $this->processError($e, $request->domain_name);
             // Back to edit page
             return back()->withInput()->with('error', $errorMessage);
         }
@@ -103,18 +103,17 @@ class StockController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  Stock  $stock
+     * @param  \App\DataSource  $dataSource
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Stock $stock)
+    public function destroy(DataSource $dataSource)
     {
-        $status = $stock->delete();
-        if ($status) {
+        if ($dataSource->delete()) {
             // Back to index page
-            return redirect()->route($this->folderName . '.index')->with('success', $stock->getKeyValue() . ' deleted successfully.');
+            return redirect()->route($this->folderName . '.index')->with('success', $dataSource->domain_name . ' deleted successfully.');
         } else {
             // Back to edit page
-            return back()->with('error', $stock->getKeyValue() . ' cannot be deleted, please try again.');
+            return back()->with('error', $dataSource->domain_name . ' cannot be deleted, please try again.');
         }
     }
 }
