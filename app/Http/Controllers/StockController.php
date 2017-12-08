@@ -33,13 +33,11 @@ class StockController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request, $this->validationRules);
+        $validatedFields = $this->validate($request, $this->validationRules);
+        $validatedFields['symbol'] = strtoupper($validatedFields['symbol']);
 
         try {
-            Stock::create([
-                'symbol' => strtoupper($request->symbol),
-                'name' => $request->name
-            ]);
+            Stock::create($validatedFields);
             return redirect()->route($this->folderName . '.index')->with('success', $request->symbol.' added successfully.');
         } catch (\Exception $e) {
             $errorMessage = $this->processError($e, $request->symbol);
@@ -84,13 +82,11 @@ class StockController extends Controller
      */
     public function update(Request $request, Stock $stock)
     {
-        $this->validate($request, $this->validationRules);
+        $validatedFields = $this->validate($request, $this->validationRules);
+        $validatedFields['symbol'] = strtoupper($validatedFields['symbol']);
 
         try {
-            $stock->update([
-                'symbol' => strtoupper($request->symbol),
-                'name' => $request->name
-            ]);
+            $stock->update($validatedFields);
             // Show update info
             return redirect()->route($this->folderName . '.index')->with('success', $stock->symbol . ' updated successfully.');
         } catch (\Exception $e) {

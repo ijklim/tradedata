@@ -33,14 +33,11 @@ class DataSourceController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request, $this->validationRules);
-        
+        $validatedFields = $this->validate($request, $this->validationRules);
+
         try {
-            DataSource::create([
-                'domain_name' => $request->domain_name,
-                'api_base_url' => $request->api_base_url
-            ]);
-                return redirect()->route($this->folderName . '.index')->with('success', $request->domain_name.' added successfully.');
+            DataSource::create($validatedFields);
+            return redirect()->route($this->folderName . '.index')->with('success', $request->domain_name.' added successfully.');
         } catch (\Exception $e) {
             $errorMessage = $this->processError($e, $request->domain_name);
             return back()->withInput()->with('error', $errorMessage);
@@ -81,13 +78,10 @@ class DataSourceController extends Controller
      */
     public function update(Request $request, DataSource $dataSource)
     {
-        $this->validate($request, $this->validationRules);
+        $validatedFields = $this->validate($request, $this->validationRules);
         
         try {
-            $dataSource->update([
-                'domain_name' => $request->domain_name,
-                'api_base_url' => $request->api_base_url
-            ]);
+            $dataSource->update($validatedFields);
             // Show update info
             return redirect()->route($this->folderName . '.index')->with('success', 'Data Source #' . $dataSource->id . ' updated successfully.');
         } catch (\Exception $e) {
