@@ -8,7 +8,7 @@
     <button
         class='btn rounded-circle button--bottom-float'
         onclick='window.location = "/{!! $folderName !!}/create"'
-        title='Add {!! $itemName !!}';
+        title='Add {!! $itemName !!}'
     >
         +
     </button>
