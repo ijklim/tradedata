@@ -1,10 +1,8 @@
 <?php
+/* Note: Trait is used rather than abstract class due to __CLASS__ being bound to abstract class */
+namespace App\Traits;
 
-namespace App;
-
-use Illuminate\Database\Eloquent\Model;
-
-class ModelPlus extends Model
+trait Model
 {
     /**
      * Return value of primary key.
@@ -14,7 +12,7 @@ class ModelPlus extends Model
     public function getKeyValue() {
         $primaryKey = $this->getKeyName();
         return $this->$primaryKey;
-    }
+    }   
 
     /**
      * Return folder name of where the views are stored.

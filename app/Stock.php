@@ -2,7 +2,9 @@
 
 namespace App;
 
-class Stock extends ModelPlus
+use Illuminate\Database\Eloquent\Model;
+
+class Stock extends Model
 {
     protected $fillable = [
         'symbol', 'name'
@@ -12,6 +14,8 @@ class Stock extends ModelPlus
     protected $primaryKey = 'symbol';
     public $incrementing = false;
     protected $keyType = 'string';
+
+    use \App\Traits\Model;
 
     public function stockPrices()
     {
