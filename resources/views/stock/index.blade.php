@@ -2,10 +2,10 @@
 
 @php
     // Compute common variables
-    $folderName = request()->path();                            // e.g. data-source
+    $folderName = request()->path();                            // e.g. data-source/1
+    $folderName = preg_split("_[\\\\/]_", $folderName)[0];      // e.g. data-source
     $itemName = ucwords(str_replace('-', ' ', $folderName));    // e.g. Data Source
     $pageName = $itemName . 's';                                // e.g. Data Sources
-    //$items = $stocks ?? null;
 @endphp
 
 @section('content')
