@@ -1,5 +1,20 @@
 @extends('layouts.app')
 
+@section('style')
+    .row.equal-height {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .row.equal-height > [class*='col-'] {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card {
+        flex: 1;
+    }
+@endsection
+
 @section('content')
     <h1 class="col-12 text-center">
         {!! $itemName . 's' !!}
@@ -12,65 +27,74 @@
     >
         +
     </button>
+
+    <div class='col-12'>
     @if (isset($items))
-        @foreach ($items as $item)
-            <div class="col-sm-6 col-md-4 mt-3">
-                <div class='card border-dark'>
-                    <div class="card-header text-white bg-dark">
-                        {{ $item->getKeyValue() }}
-                    </div>
-                    <div class="card-body">
-                        <div>{{ $item->name }}</div>
-                        <div>Available Prices: {{ $item->stockprices()->get()->count() }}</div>
-                    </div>
-                    <div class="card-footer">
-                        <div class='row'>
-                            <!-- Prices -->
-                            <div class='col px-1'>
+        <div class='row equal-height'>
+            @foreach ($items as $item)
+                <div class='col-12 col-md-6 col-lg-4 mt-3'>
+                    <div class='card'>
+                        <div class="card-header text-white bg-dark">
+                            {{ $item->getKeyValue() }}
+                        </div>
+                        <div class="card-body">
+                            <div>{{ $item->name }}</div>
+                            <div>Available Prices: {{ $item->stockprices()->get()->count() }}</div>
+                        </div>
+                        <div class="card-footer">
+                            <div class='row'>
+                                @php
+                                    $buttonWrapperClass = 'col-3 px-1';
+                                    $buttonClass = 'btn btn-block p-1';
+                                @endphp
+                                <!-- Prices -->
+                                <div class='{{ $buttonWrapperClass }}'>
+                                    <button
+                                        class='{{ $buttonClass }} btn-primary'
+                                        onclick='window.location = "/stock-price/{{ $item->symbol }}"'
+                                    >
+                                        Prices
+                                    </button>
+                                </div>
+
+                                <!-- Single stock only -->
+                                <div class='{{ $buttonWrapperClass }}'>
                                 <button
-                                    class='btn btn-primary btn-block'
-                                    onclick='window.location = "/stock-price/{{ $item->symbol }}"'
+                                    class='{{ $buttonClass }}'
+                                    onclick='window.location = "/{!! $folderName !!}/{{ $item->symbol }}"'
                                 >
-                                    Prices
+                                    Show
                                 </button>
-                            </div>
+                                </div>
 
-                            <!-- Single stock only -->
-                            <div class='col px-1'>
-                            <button
-                                class='btn btn-primary btn-block'
-                                onclick='window.location = "/{!! $folderName !!}/{{ $item->symbol }}"'
-                            >
-                                Show
-                            </button>
-                            </div>
+                                <!-- Edit -->
+                                <div class='{{ $buttonWrapperClass }}'>
+                                <button
+                                    class='{{ $buttonClass }}'
+                                    onclick='window.location = "/{!! $folderName !!}/{!! $item->getKeyValue() !!}/edit"'
+                                >
+                                    Edit
+                                </button>
+                                </div>
 
-                            <!-- Edit -->
-                            <div class='col px-1'>
-                            <button
-                                class='btn btn-primary btn-block'
-                                onclick='window.location = "/{!! $folderName !!}/{!! $item->getKeyValue() !!}/edit"'
-                            >
-                                Edit
-                            </button>
-                            </div>
-
-                            <!-- Delete -->
-                            <div class='col px-1'>
-                            {{
-                                Form::open([
-                                    'method' => 'DELETE',
-                                    'route' => [$folderName . '.destroy', $item->getKeyValue()],
-                                    'class' => 'd-inline'
-                                ])
-                            }}
-                                {{ Form::submit('Delete', ['class' => 'btn btn-danger btn-block']) }}
-                            {{ Form::close() }}
+                                <!-- Delete -->
+                                <div class='{{ $buttonWrapperClass }}'>
+                                {{
+                                    Form::open([
+                                        'method' => 'DELETE',
+                                        'route' => [$folderName . '.destroy', $item->getKeyValue()],
+                                        'class' => 'd-inline'
+                                    ])
+                                }}
+                                    {{ Form::submit('Delete', ['class' => $buttonClass . ' btn-danger']) }}
+                                {{ Form::close() }}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        @endforeach
+            @endforeach
+        </div>
     @endif
+    </div>
 @endsection

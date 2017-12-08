@@ -40,6 +40,8 @@
             right: 2rem;
             z-index: 1000;
         }
+
+        @yield('style')
     </style>
 </head>
 <body>
@@ -51,6 +53,7 @@
         </div>
     </div>
 
+    <!-- For debugging purpose only -->
     @include('debug.screen')
 
     <!-- Scripts -->
