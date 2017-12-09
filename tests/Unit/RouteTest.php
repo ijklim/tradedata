@@ -16,11 +16,12 @@ class RouteTest extends TestCase
      */
     public function testRoutes()
     {
+        // Find available routes: `php artisan route:list`
         $routes = [
             '/',
-            'data-source',
-            'stock',
-            'stock-price',
+            'data-source', 'data-source/create',
+            'stock', 'stock/create',
+            'stock-price', 'stock-price/create',
         ];
 
         foreach ($routes as $route) {
