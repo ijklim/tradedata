@@ -9,4 +9,6 @@ class StockPrice extends Model
     protected $fillable = [
         'symbol', 'date', 'open', 'high', 'low', 'close', 'volume'
     ];
+
+    use \App\Traits\Model;
 }
