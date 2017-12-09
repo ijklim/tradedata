@@ -20,7 +20,7 @@ trait Model
      *
      * @return string
      */
-    public function getFolderName() {
+    public static function getFolderName() {
         // Split base on / or \
         $classParts = preg_split("_[\\\\/]_", __CLASS__);
         // Split by camel case

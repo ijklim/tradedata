@@ -18,7 +18,7 @@ class StockController extends Controller
     public function __construct(Stock $items)
     {
         $this->items = $items;
-        $this->folderName = $this->items::first()->getFolderName();
+        $this->folderName = get_class($items)::getFolderName();
         $this->validationRules = [
             'symbol' => 'required|max:5',
             'name' => 'required|min:5'

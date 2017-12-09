@@ -18,7 +18,7 @@ class DataSourceController extends Controller
     public function __construct(DataSource $items)
     {
         $this->items = $items;
-        $this->folderName = $this->items::first()->getFolderName();
+        $this->folderName = get_class($items)::getFolderName();
         $this->validationRules = [
             'domain_name' => 'required|min:5',
             'api_base_url' => 'required|min:10'
