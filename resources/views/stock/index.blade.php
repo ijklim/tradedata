@@ -59,35 +59,35 @@
 
                                 <!-- Single stock only -->
                                 <div class='{{ $buttonWrapperClass }}'>
-                                <button
-                                    class='{{ $buttonClass }}'
-                                    onclick='window.location = "/{!! $folderName !!}/{{ $item->symbol }}"'
-                                >
-                                    Show
-                                </button>
+                                    <button
+                                        class='{{ $buttonClass }}'
+                                        onclick='window.location = "/{!! $folderName !!}/{{ $item->symbol }}"'
+                                    >
+                                        Show
+                                    </button>
                                 </div>
 
                                 <!-- Edit -->
                                 <div class='{{ $buttonWrapperClass }}'>
-                                <button
-                                    class='{{ $buttonClass }}'
-                                    onclick='window.location = "/{!! $folderName !!}/{!! $item->getKeyValue() !!}/edit"'
-                                >
-                                    Edit
-                                </button>
+                                    <button
+                                        class='{{ $buttonClass }}'
+                                        onclick='window.location = "/{!! $folderName !!}/{!! $item->getKeyValue() !!}/edit"'
+                                    >
+                                        Edit
+                                    </button>
                                 </div>
 
                                 <!-- Delete -->
                                 <div class='{{ $buttonWrapperClass }}'>
-                                {{
-                                    Form::open([
-                                        'method' => 'DELETE',
-                                        'route' => [$folderName . '.destroy', $item->getKeyValue()],
-                                        'class' => 'd-inline'
-                                    ])
-                                }}
-                                    {{ Form::submit('Delete', ['class' => $buttonClass . ' btn-danger']) }}
-                                {{ Form::close() }}
+                                    {{
+                                        Form::open([
+                                            'method' => 'DELETE',
+                                            'route' => [$folderName . '.destroy', $item->getKeyValue()],
+                                            'class' => 'd-inline'
+                                        ])
+                                    }}
+                                        {{ Form::submit('Delete', ['class' => $buttonClass . ' btn-danger']) }}
+                                    {{ Form::close() }}
                                 </div>
                             </div>
                         </div>

@@ -85,4 +85,5 @@
             @endforeach
         </div>
     @endif
+    </div>
 @endsection
