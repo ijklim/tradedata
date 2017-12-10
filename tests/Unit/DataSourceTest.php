@@ -23,9 +23,9 @@ class DataSourceTest extends TestCase
             reset(self::$fieldNames) => 'portal.com',
             next(self::$fieldNames) => 'http://portalapi.net'
         ];
-        // Attempt to set key of first row in second tow
+        // For duplicate check, convert primary key to uppercase to test additional condition
         self::$datasets['duplicate'] = [
-            reset(self::$fieldNames) => reset(self::$datasets['first']),
+            reset(self::$fieldNames) => strtoupper(reset(self::$datasets['first'])),
             next(self::$fieldNames) => end(self::$datasets['second'])
         ];
         // Modify first row
@@ -68,9 +68,9 @@ class DataSourceTest extends TestCase
                 ->assertSee(self::$datasets['first'][next(self::$fieldNames)]);
         }
 
-        // Ensure duplicates cannot be entered
-        $this->json('POST', '/' . self::$folderName, self::$datasets['first'])
-            ->assertSessionHas('error');
+        // Ensure duplicates cannot be entered, fails validation
+        $this->json('POST', '/' . self::$folderName, self::$datasets['duplicate'])
+            ->assertStatus(422);
 
         // Ensure second set of data is not yet in the system
         $this->get(reset(self::$routes))
@@ -99,7 +99,7 @@ class DataSourceTest extends TestCase
 
         // Test edit prevent key violation
         $this->json('PUT', '/' . self::$folderName . '/2', self::$datasets['duplicate'])
-            ->assertSessionHas('error');
+            ->assertStatus(422);
         $this->assertDatabaseMissing(self::$tableName, self::$datasets['duplicate']);
         
         // Test edit can be done when valid, testing .update
