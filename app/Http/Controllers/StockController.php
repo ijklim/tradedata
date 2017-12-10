@@ -25,6 +25,23 @@ class StockController extends Controller
             'symbol' => ['bail', 'required', 'max:5'],
             'name' => 'required|min:5'
         ];
+        // First field is the unique field
+        $this->uniqueFieldName = array_keys($this->validationRules)[0];
+
+    }
+
+    /**
+     * Clean up Form input values if necessary.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Request
+     */
+    private function cleanRequest(Request $request) {
+        $uniqueFieldName = $this->uniqueFieldName;
+        $request->merge([
+            $uniqueFieldName => strtoupper($request->$uniqueFieldName)
+        ]);
+        return $request;
     }
 
     /**
@@ -35,21 +52,24 @@ class StockController extends Controller
      */
     public function store(Request $request)
     {
-        // Clean up input data
-        $request->merge(['symbol' => strtoupper($request->symbol)]);
-        // Add 'unique' rule
         $validationRules = $this->validationRules;
+        $uniqueFieldName = $this->uniqueFieldName;
+
+        // Clean up input data
+        $request = $this->cleanRequest($request);
+        // Add 'unique' rule
         $uniqueRule = [
-            Rule::unique($this->className::getTableName(), 'symbol')
+            Rule::unique($this->className::getTableName(), $uniqueFieldName)
         ];
-        $validationRules['symbol'] = array_merge($validationRules['symbol'], $uniqueRule);
+        $validationRules[$uniqueFieldName] = array_merge($validationRules[$uniqueFieldName], $uniqueRule);
+        // Validate inputs
         $validatedFields = $this->validate($request, $validationRules);
 
         try {
             $this->className::create($validatedFields);
-            return redirect()->route($this->folderName . '.index')->with('success', $request->symbol.' added successfully.');
+            return redirect()->route($this->folderName . '.index')->with('success', $request->$uniqueFieldName.' added successfully.');
         } catch (\Exception $e) {
-            $errorMessage = $this->processError($e, $request->symbol);
+            $errorMessage = $this->processError($e, $request->$uniqueFieldName);
             return back()->withInput()->with('error', $errorMessage);
         }
     }
@@ -91,23 +111,26 @@ class StockController extends Controller
      */
     public function update(Request $request, Stock $stock)
     {
-        // Clean up input data
-        $request->merge(['symbol' => strtoupper($request->symbol)]);
-        // Add 'unique' rule
         $validationRules = $this->validationRules;
+        $uniqueFieldName = $this->uniqueFieldName;
+
+        // Clean up input data
+        $request = $this->cleanRequest($request);
+        // Add 'unique' rule
         $uniqueRule = [
-            Rule::unique($this->className::getTableName(), 'symbol')
-                ->ignore($stock->symbol, 'symbol')
+            Rule::unique($this->className::getTableName(), $uniqueFieldName)
+                ->ignore($stock->$uniqueFieldName, $uniqueFieldName)
         ];
-        $validationRules['symbol'] = array_merge($validationRules['symbol'], $uniqueRule);
+        $validationRules[$uniqueFieldName] = array_merge($validationRules[$uniqueFieldName], $uniqueRule);
+        // Validate inputs
         $validatedFields = $this->validate($request, $validationRules);
 
         try {
             $stock->update($validatedFields);
             // Show update info
-            return redirect()->route($this->folderName . '.index')->with('success', $stock->symbol . ' updated successfully.');
+            return redirect()->route($this->folderName . '.index')->with('success', $request->$uniqueFieldName . ' updated successfully.');
         } catch (\Exception $e) {
-            $errorMessage = $this->processError($e, $request->symbol);
+            $errorMessage = $this->processError($e, $request->$uniqueFieldName);
             // Back to edit page
             return back()->withInput()->with('error', $errorMessage);
         }

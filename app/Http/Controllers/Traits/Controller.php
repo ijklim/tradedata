@@ -7,6 +7,8 @@ trait Controller
     protected $className;
     protected $folderName;
     protected $validationRules;
+    protected $uniqueFieldName;
+    
 
     /**
      * Display a listing of the resource.
