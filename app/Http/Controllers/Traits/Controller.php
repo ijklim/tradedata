@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Traits;
 trait Controller
 {
     protected $items;
+    protected $className;
     protected $folderName;
     protected $validationRules;
 

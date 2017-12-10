@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Stock;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class StockController extends Controller
 {
@@ -18,9 +19,10 @@ class StockController extends Controller
     public function __construct(Stock $items)
     {
         $this->items = $items;
-        $this->folderName = get_class($items)::getFolderName();
+        $this->className = get_class($items);
+        $this->folderName = $this->className::getFolderName();
         $this->validationRules = [
-            'symbol' => 'required|max:5',
+            'symbol' => ['bail', 'required', 'max:5'],
             'name' => 'required|min:5'
         ];
     }
@@ -33,11 +35,18 @@ class StockController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedFields = $this->validate($request, $this->validationRules);
-        $validatedFields['symbol'] = strtoupper($validatedFields['symbol']);
+        // Clean up input data
+        $request->merge(['symbol' => strtoupper($request->symbol)]);
+        // Add 'unique' rule
+        $validationRules = $this->validationRules;
+        $uniqueRule = [
+            Rule::unique($this->className::getTableName(), 'symbol')
+        ];
+        $validationRules['symbol'] = array_merge($validationRules['symbol'], $uniqueRule);
+        $validatedFields = $this->validate($request, $validationRules);
 
         try {
-            Stock::create($validatedFields);
+            $this->className::create($validatedFields);
             return redirect()->route($this->folderName . '.index')->with('success', $request->symbol.' added successfully.');
         } catch (\Exception $e) {
             $errorMessage = $this->processError($e, $request->symbol);
@@ -82,8 +91,16 @@ class StockController extends Controller
      */
     public function update(Request $request, Stock $stock)
     {
-        $validatedFields = $this->validate($request, $this->validationRules);
-        $validatedFields['symbol'] = strtoupper($validatedFields['symbol']);
+        // Clean up input data
+        $request->merge(['symbol' => strtoupper($request->symbol)]);
+        // Add 'unique' rule
+        $validationRules = $this->validationRules;
+        $uniqueRule = [
+            Rule::unique($this->className::getTableName(), 'symbol')
+                ->ignore($stock->symbol, 'symbol')
+        ];
+        $validationRules['symbol'] = array_merge($validationRules['symbol'], $uniqueRule);
+        $validatedFields = $this->validate($request, $validationRules);
 
         try {
             $stock->update($validatedFields);

@@ -23,8 +23,9 @@ class StockTest extends TestCase
             reset(self::$fieldNames) => 'AAPL',
             next(self::$fieldNames) => 'Apple company in the cloud'
         ];
+        // For duplicate check, convert primary key to lowercase to test additional condition
         self::$datasets['duplicate'] = [
-            reset(self::$fieldNames) => reset(self::$datasets['first']),
+            reset(self::$fieldNames) => strtolower(reset(self::$datasets['first'])),
             next(self::$fieldNames) => end(self::$datasets['second'])
         ];
         self::$datasets['edit'] = [
@@ -67,9 +68,9 @@ class StockTest extends TestCase
                 ->assertSee(self::$datasets['first'][next(self::$fieldNames)]);
         }
 
-        // Ensure duplicates cannot be entered
-        $this->json('POST', '/' . self::$folderName, self::$datasets['first'])
-            ->assertSessionHas('error');
+        // Ensure duplicates cannot be entered, fails validation
+        $this->json('POST', '/' . self::$folderName, self::$datasets['duplicate'])
+            ->assertStatus(422);
         
         // Ensure second set of data is not yet in the system
         $this->get(reset(self::$routes))
@@ -96,9 +97,9 @@ class StockTest extends TestCase
             ->assertSee(self::$datasets['second'][reset(self::$fieldNames)])
             ->assertSee(self::$datasets['second'][next(self::$fieldNames)]);
 
-        // Test edit prevent key violation
+        // Test edit prevent key violation, including primary key in different case
         $this->json('PUT', '/' . self::$folderName . '/' . self::$datasets['second'][reset(self::$fieldNames)], self::$datasets['duplicate'])
-            ->assertSessionHas('error');
+            ->assertStatus(422);
         $this->assertDatabaseMissing(self::$tableName, self::$datasets['duplicate']);
         
         // Test edit can be done when valid, testing .update
