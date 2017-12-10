@@ -33,4 +33,8 @@ trait Model
         // Convert to lower case and join with -
         return strtolower(join($folderNameParts, '-'));
     }
+
+    public static function getTableName() {
+        return str_replace("-", '_', self::getFolderName()) . 's';
+    }
 }

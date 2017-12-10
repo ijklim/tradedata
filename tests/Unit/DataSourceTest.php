@@ -4,45 +4,46 @@ namespace Tests\Unit;
 
 use Tests\TestCase;
 
-class StockTest extends TestCase
+class DataSourceTest extends TestCase
 {
     use \Tests\Traits\Test;
 
     static function setUpBeforeClass()
     {
         // Declared in trait
-        self::init(['symbol', 'name']);
-
+        self::init(['domain_name', 'api_base_url']);
+        
         // First: Unique values
         self::$datasets['first'] = [
-            reset(self::$fieldNames) => 'GOOGL',
-            next(self::$fieldNames) => 'The Alphabet Company'
+            reset(self::$fieldNames) => 'exampl.com',
+            next(self::$fieldNames) => 'http://exampl.com/api'
         ];
         // Second: Unique values
         self::$datasets['second'] = [
-            reset(self::$fieldNames) => 'AAPL',
-            next(self::$fieldNames) => 'Apple company in the cloud'
+            reset(self::$fieldNames) => 'portal.com',
+            next(self::$fieldNames) => 'http://portalapi.net'
         ];
+        // Attempt to set key of first row in second tow
         self::$datasets['duplicate'] = [
             reset(self::$fieldNames) => reset(self::$datasets['first']),
             next(self::$fieldNames) => end(self::$datasets['second'])
         ];
+        // Modify first row
         self::$datasets['edit'] = [
             reset(self::$fieldNames) => reset(self::$datasets['first']),
-            next(self::$fieldNames) => next(self::$datasets['first']) . ' (2018)'
+            next(self::$fieldNames) => next(self::$datasets['first']) . '/get'
         ];
         self::$routes = [
-            '/' . self::$folderName,
-            '/' . self::$folderName . '/' . self::$datasets['first'][reset(self::$fieldNames)]
+            '/' . self::$folderName
         ];
     }
 
     /**
-     * Test Stock related functions.
+     * Test DataSource related functions.
      *
      * @return void
      */
-    public function testStock()
+    public function testDataSource()
     {
         // Testing .show and .index, data should not exist
         foreach (self::$routes as $route) {
@@ -70,7 +71,7 @@ class StockTest extends TestCase
         // Ensure duplicates cannot be entered
         $this->json('POST', '/' . self::$folderName, self::$datasets['first'])
             ->assertSessionHas('error');
-        
+
         // Ensure second set of data is not yet in the system
         $this->get(reset(self::$routes))
             ->assertDontSee(self::$datasets['second'][reset(self::$fieldNames)])
@@ -86,10 +87,10 @@ class StockTest extends TestCase
         $this->get(reset(self::$routes))
             ->assertSee(self::$datasets['second'][reset(self::$fieldNames)])
             ->assertSee(self::$datasets['second'][next(self::$fieldNames)]);
-        
+    
         // Test .edit page is available, check field contains default value
         // Note: This has to run before key violation edit test, otherwise the duplicate key will show with error message, result expected
-        $this->get('/' . self::$folderName . '/' . self::$datasets['second'][reset(self::$fieldNames)] . '/edit')
+        $this->get('/' . self::$folderName . '/2/edit')
             ->assertStatus(200)
             ->assertDontSee(self::$datasets['first'][reset(self::$fieldNames)])
             ->assertDontSee(self::$datasets['first'][end(self::$fieldNames)])
@@ -97,12 +98,12 @@ class StockTest extends TestCase
             ->assertSee(self::$datasets['second'][next(self::$fieldNames)]);
 
         // Test edit prevent key violation
-        $this->json('PUT', '/' . self::$folderName . '/' . self::$datasets['second'][reset(self::$fieldNames)], self::$datasets['duplicate'])
+        $this->json('PUT', '/' . self::$folderName . '/2', self::$datasets['duplicate'])
             ->assertSessionHas('error');
         $this->assertDatabaseMissing(self::$tableName, self::$datasets['duplicate']);
         
         // Test edit can be done when valid, testing .update
-        $this->json('PUT', '/' . self::$folderName . '/' . self::$datasets['edit'][reset(self::$fieldNames)], self::$datasets['edit'])
+        $this->json('PUT', '/' . self::$folderName . '/1', self::$datasets['edit'])
             ->assertSessionHas('success')
             ->assertRedirect(self::$folderName);
         // New data available, old data disappear
@@ -118,7 +119,7 @@ class StockTest extends TestCase
         
         // Testing .destroy
         $this->assertDatabaseHas(self::$tableName, self::$datasets['second']);
-        $this->json('DELETE', '/' . self::$folderName . '/' . self::$datasets['second'][reset(self::$fieldNames)])
+        $this->json('DELETE', '/' . self::$folderName . '/2')
             ->assertSessionHas('success')
             ->assertRedirect(self::$folderName);
         // Data check
