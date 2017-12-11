@@ -21,17 +21,8 @@ trait Model
      * @return string
      */
     public static function getFolderName() {
-        // Split base on / or \
-        $classParts = preg_split("_[\\\\/]_", __CLASS__);
-        // Split by camel case
-        $folderNameParts = preg_split('/(?<=[a-z])(?=[A-Z])/x', end($classParts));
         // Remove 'test' if it is the last element
-        // Classes other than test classes in `tests` folder should not end in the word 'Test'
-        if (end($folderNameParts) == 'Test') {
-            array_pop($folderNameParts);
-        }
-        // Convert to lower case and join with -
-        return strtolower(join($folderNameParts, '-'));
+        return str_replace('-test', '', kebab_case(class_basename(__CLASS__)));
     }
 
     public static function getTableName() {
