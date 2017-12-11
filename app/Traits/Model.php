@@ -21,8 +21,8 @@ trait Model
      * @return string
      */
     public static function getFolderName() {
-        // Remove 'test' if it is the last element
-        return str_replace('-test', '', kebab_case(class_basename(__CLASS__)));
+        // Remove '-test' if it is the last part of the folder name
+        return preg_replace('/-test$/', '', kebab_case(class_basename(__CLASS__)));
     }
 
     public static function getTableName() {
