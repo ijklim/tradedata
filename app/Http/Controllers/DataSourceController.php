@@ -21,12 +21,8 @@ class DataSourceController extends Controller
         $this->items = $items;
         $this->className = get_class($items);
         $this->folderName = $this->className::getFolderName();
-        $this->validationRules = [
-            'domain_name' => ['required', 'min:5'],
-            'api_base_url' => 'required|min:10'
-        ];
         // First field is the unique field
-        $this->uniqueFieldName = array_keys($this->validationRules)[0];
+        $this->uniqueFieldName = 'domain_name';
     }
     
     /**
@@ -44,6 +40,33 @@ class DataSourceController extends Controller
     }
 
     /**
+     * Get rules for adding a new record or updating a record.
+     *
+     * @param  DataSource  $item
+     * @return string
+     */
+    private function getRules(DataSource $item = null) {
+        $uniqueFieldName = $this->uniqueFieldName;
+        
+        // Construct 'unique' rule
+        if (isset($item)) {
+            // .update rule
+            $uniqueRule = Rule::unique($this->className::getTableName(), $uniqueFieldName)
+                            ->ignore($item->$uniqueFieldName, $uniqueFieldName);
+        } else {
+            // .store rule
+            $uniqueRule = Rule::unique($this->className::getTableName(), $uniqueFieldName);
+        }
+
+        $rules = [
+            $uniqueFieldName => ['bail', 'required', $uniqueRule, 'min:5'],
+            'api_base_url' => 'required|min:10'
+        ];
+
+        return $rules;
+    }
+
+    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -51,18 +74,11 @@ class DataSourceController extends Controller
      */
     public function store(Request $request)
     {
-        $validationRules = $this->validationRules;
         $uniqueFieldName = $this->uniqueFieldName;
 
         // Clean up input data
         $request = $this->cleanRequest($request);
-        // Add 'unique' rule
-        $uniqueRule = [
-            Rule::unique($this->className::getTableName(), $uniqueFieldName)
-        ];
-        $validationRules[$uniqueFieldName] = array_merge($validationRules[$uniqueFieldName], $uniqueRule);
-        // Validate inputs
-        $validatedFields = $this->validate($request, $validationRules);
+        $validatedFields = $this->validate($request, $this->getRules());
 
         try {
             $this->className::create($validatedFields);
@@ -107,19 +123,11 @@ class DataSourceController extends Controller
      */
     public function update(Request $request, DataSource $dataSource)
     {
-        $validationRules = $this->validationRules;
         $uniqueFieldName = $this->uniqueFieldName;
 
         // Clean up input data
         $request = $this->cleanRequest($request);
-        // Add 'unique' rule
-        $uniqueRule = [
-            Rule::unique($this->className::getTableName(), $uniqueFieldName)
-                ->ignore($dataSource->$uniqueFieldName, $uniqueFieldName)
-        ];
-        $validationRules[$uniqueFieldName] = array_merge($validationRules[$uniqueFieldName], $uniqueRule);
-        // Validate inputs
-        $validatedFields = $this->validate($request, $validationRules);
+        $validatedFields = $this->validate($request, $this->getRules($dataSource));
         
         try {
             $dataSource->update($validatedFields);

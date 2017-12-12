@@ -21,12 +21,8 @@ class StockController extends Controller
         $this->items = $items;
         $this->className = get_class($items);
         $this->folderName = $this->className::getFolderName();
-        $this->validationRules = [
-            'symbol' => ['bail', 'required', 'max:5'],
-            'name' => 'required|min:5'
-        ];
         // First field is the unique field
-        $this->uniqueFieldName = array_keys($this->validationRules)[0];
+        $this->uniqueFieldName = 'symbol';
 
     }
 
@@ -45,6 +41,33 @@ class StockController extends Controller
     }
 
     /**
+     * Get rules for adding a new record or updating a record.
+     *
+     * @param  Stock  $item
+     * @return string
+     */
+    private function getRules(Stock $item = null) {
+        $uniqueFieldName = $this->uniqueFieldName;
+        
+        // Construct 'unique' rule
+        if (isset($item)) {
+            // .update rule
+            $uniqueRule = Rule::unique($this->className::getTableName(), $uniqueFieldName)
+                            ->ignore($item->$uniqueFieldName, $uniqueFieldName);
+        } else {
+            // .store rule
+            $uniqueRule = Rule::unique($this->className::getTableName(), $uniqueFieldName);
+        }
+
+        $rules = [
+            $uniqueFieldName => ['bail', 'required', $uniqueRule, 'max:5'],
+            'name' => 'required|min:5'
+        ];
+
+        return $rules;
+    }
+
+    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -52,18 +75,11 @@ class StockController extends Controller
      */
     public function store(Request $request)
     {
-        $validationRules = $this->validationRules;
         $uniqueFieldName = $this->uniqueFieldName;
 
         // Clean up input data
         $request = $this->cleanRequest($request);
-        // Add 'unique' rule
-        $uniqueRule = [
-            Rule::unique($this->className::getTableName(), $uniqueFieldName)
-        ];
-        $validationRules[$uniqueFieldName] = array_merge($validationRules[$uniqueFieldName], $uniqueRule);
-        // Validate inputs
-        $validatedFields = $this->validate($request, $validationRules);
+        $validatedFields = $this->validate($request, $this->getRules());
 
         try {
             $this->className::create($validatedFields);
@@ -111,19 +127,11 @@ class StockController extends Controller
      */
     public function update(Request $request, Stock $stock)
     {
-        $validationRules = $this->validationRules;
         $uniqueFieldName = $this->uniqueFieldName;
 
         // Clean up input data
         $request = $this->cleanRequest($request);
-        // Add 'unique' rule
-        $uniqueRule = [
-            Rule::unique($this->className::getTableName(), $uniqueFieldName)
-                ->ignore($stock->$uniqueFieldName, $uniqueFieldName)
-        ];
-        $validationRules[$uniqueFieldName] = array_merge($validationRules[$uniqueFieldName], $uniqueRule);
-        // Validate inputs
-        $validatedFields = $this->validate($request, $validationRules);
+        $validatedFields = $this->validate($request, $this->getRules($stock));
 
         try {
             $stock->update($validatedFields);

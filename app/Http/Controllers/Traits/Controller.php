@@ -6,7 +6,6 @@ trait Controller
     protected $items;
     protected $className;
     protected $folderName;
-    protected $validationRules;
     protected $uniqueFieldName;
     
 
