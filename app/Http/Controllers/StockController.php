@@ -62,7 +62,7 @@ class StockController extends Controller
         $rules = [
             $uniqueFieldName => ['bail', 'required', $uniqueRule, 'max:5'],
             'name' => 'required|min:5',
-            'data_source_id' => ''
+            'data_source_id' => 'nullable|integer|min:0'
         ];
 
         return $rules;

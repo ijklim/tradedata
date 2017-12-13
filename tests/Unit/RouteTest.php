@@ -20,8 +20,7 @@ class RouteTest extends TestCase
         $routes = [
             '/',
             'data-source', 'data-source/create',
-            'stock', 'stock/create',
-            'stock-price', 'stock-price/create',
+            'stock', 'stock/create'
         ];
 
         foreach ($routes as $route) {

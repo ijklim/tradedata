@@ -13,7 +13,9 @@ trait Test
     static $tableName;
     static $datasets;
     static $fieldNames;
-    static $routes;
+    static $uniqueKey;
+    static $editKey;
+    static $routes; // Should be removed after refactoring data-source
 
     public static function init($fieldNames = []) {
         self::$folderName = self::getFolderName();
