@@ -13,9 +13,9 @@ trait Test
     static $tableName;
     static $datasets;
     static $fieldNames;
+    static $primaryKey;
     static $uniqueKey;
-    static $editKey;
-    static $routes; // Should be removed after refactoring data-source
+    static $editKeyValue;
 
     /**
      * Initialize commonly used static variables.
@@ -30,14 +30,41 @@ trait Test
     }
 
     /**
+     * Create array with field name and value.
+     *
+     * @param  primary  $parameter1, $parameter2, $parameter3...
+     * @return array
+     */
+    public static function constructDataset(...$parameters) {
+        $dataset = [];
+        foreach ($parameters as $index => $parameter) {
+            $dataset[self::$fieldNames[$index]] = $parameter;
+        }
+        return $dataset;
+    }
+
+    /**
+     * Create array with testing routes.
+     *
+     * @param  string  $primaryKeyValue
+     * @return array
+     */
+    static function getRoutes($primaryKeyValue) {
+        return [
+            '/' . self::$folderName,
+            '/' . self::$folderName . '/' . $primaryKeyValue
+        ];
+    }
+    
+    /**
      * Perform test related to adding new data to table.
      *
      * @return void
      */
     private function runNewDataTests() {
-        foreach (self::$datasets['valid'] as $dataset) {
-            $uniqueKeyValue = $dataset[self::$uniqueKey];
-            foreach (self::getRoutes($uniqueKeyValue) as $route) {
+        foreach (self::$datasets['valid'] as $index => $dataset) {
+            $primaryKeyValue = (self::$primaryKey == 'id' ? $index + 1 : $dataset[self::$primaryKey]);
+            foreach (self::getRoutes($primaryKeyValue) as $route) {
                 // Testing .show and .index, data should not exist
                 $this->get($route)
                     ->assertDontSee($dataset[reset(self::$fieldNames)])
@@ -55,7 +82,7 @@ trait Test
             // Dataset should now be in the table
             $this->assertDatabaseHas(self::$tableName, $dataset);
 
-            foreach (self::getRoutes($uniqueKeyValue) as $route) {
+            foreach (self::getRoutes($primaryKeyValue) as $route) {
                 // Testing .show displays added data, first 2 fields
                 $this->get($route)
                     ->assertSee($dataset[reset(self::$fieldNames)])
@@ -63,7 +90,7 @@ trait Test
             }
 
             // Test .edit page is available, check field contains default value
-            $this->get('/' . self::$folderName . '/' . $uniqueKeyValue . '/edit')
+            $this->get('/' . self::$folderName . '/' . $primaryKeyValue . '/edit')
                 ->assertStatus(200)
                 ->assertSee('value="' . $dataset[reset(self::$fieldNames)] . '"')
                 ->assertSee('value="' . $dataset[next(self::$fieldNames)] . '"');
@@ -85,7 +112,7 @@ trait Test
      */
     private function runUpdateDataTests() {
         // Invalid update checks
-        $route = '/' . self::$folderName . '/' . self::$editKey;
+        $route = '/' . self::$folderName . '/' . self::$editKeyValue;
         // datasets from both 'invalid' and 'invalid-edit'
         $datasets = array_collapse(array_only(self::$datasets, ['invalid', 'invalid-edit']));
         foreach ($datasets as $dataset) {
@@ -113,8 +140,11 @@ trait Test
                 ->assertSee($datasetTableCheck[reset(self::$fieldNames)])
                 ->assertSee($datasetTableCheck[next(self::$fieldNames)]);
 
-            // Construct new route in case unique key value has changed
-            $route = '/' . self::$folderName . '/' . $datasetTableCheck[self::$uniqueKey];
+            if (self::$primaryKey != 'id') {
+                // Construct new route in case unique key value has changed
+                // Only necessary if primary key can be modified
+                $route = '/' . self::$folderName . '/' . $datasetTableCheck[self::$uniqueKey];
+            }
         }
     }
 
@@ -129,12 +159,15 @@ trait Test
             $this->assertDatabaseHas(self::$tableName, [self::$uniqueKey => $data]);
         }
         // Testing .destroy
-        $this->json('DELETE', '/' . self::$folderName . '/' . self::$editKey)
+        $this->json('DELETE', '/' . self::$folderName . '/' . self::$editKeyValue)
             ->assertSessionHas('success')
             ->assertRedirect(self::$folderName);
         // Check table again
-        foreach (array_pluck(self::$datasets['valid'], self::$uniqueKey) as $data) {
-            if ($data == self::$editKey) {
+        foreach (array_pluck(self::$datasets['valid'], self::$uniqueKey) as $index => $data) {
+            if (
+                $data == self::$editKeyValue || 
+                (self::$primaryKey == 'id' && $index == self::$editKeyValue - 1)
+            ) {
                 // Deleted row should no longer be in the table
                 $this->assertDatabaseMissing(self::$tableName, [self::$uniqueKey => $data]);
             } else {

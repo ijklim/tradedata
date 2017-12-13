@@ -9,20 +9,6 @@ class StockTest extends TestCase
     use \Tests\Traits\Test;
 
     /**
-     * Create array with field name and value.
-     *
-     * @param  primary  $parameter1, $parameter2, $parameter3...
-     * @return array
-     */
-    static function constructDataset(...$parameters) {
-        $dataset = [];
-        foreach ($parameters as $index => $parameter) {
-            $dataset[self::$fieldNames[$index]] = $parameter;
-        }
-        return $dataset;
-    }
-
-    /**
      * Create array with valid and invalid datasets for testing.
      *
      * @return void
@@ -31,7 +17,7 @@ class StockTest extends TestCase
         // Valid data
         self::$datasets['valid'] = [
             self::constructDataset('GOOGL', 'The Alphabet Company', 1),
-            self::constructDataset(self::$editKey, 'Apple company in the cloud', 1),
+            self::constructDataset(self::$editKeyValue, 'Apple company in the cloud', 1),
             self::constructDataset('TSLA', 'Tesla Inc.', 1),
         ];
 
@@ -42,12 +28,12 @@ class StockTest extends TestCase
             self::constructDataset('AAA', 'The', 1),                // name too short
             self::constructDataset('BBB', 'ABCDEFG HIJK', -1),      // data_source_id < 0
             self::constructDataset('CCCCCC', 'Tesla Inc.'),         // symbol too long
-            self::constructDataset('tsla', 'App in the cloud', 1),  // lowercase should still violate key check, must be different from $editKey
+            self::constructDataset('tsla', 'App in the cloud', 1),  // lowercase should still violate key check, must be different from $editKeyValue
         ];
 
 
-        // Valid data for edit test, search for index of row which contains $editKey
-        // self::$editRowIndex = array_search(self::$editKey, array_pluck(self::$datasets['valid'], self::$uniqueKey));
+        // Valid data for edit test, search for index of row which contains $editKeyValue
+        // self::$editRowIndex = array_search(self::$editKeyValue, array_pluck(self::$datasets['valid'], self::$uniqueKey));
         self::$datasets['valid-edit'] = [
             self::constructDataset('aapl', 'The new apple company', 1),
             self::constructDataset('aapL', 'Apple with no data source'),
@@ -59,23 +45,10 @@ class StockTest extends TestCase
         self::$datasets['invalid-edit'] = [
             // Key violation: using 1st row unique key, check case insensitivity as well
             self::constructDataset(
-                strtolower(self::$datasets['valid'][0][self::$fieldNames[0]]),
+                self::uniqueKeyTransform(self::$datasets['valid'][0][self::$uniqueKey]),
                 'Apple a day',
                 1
             ),
-        ];
-    }
-
-    /**
-     * Create array with testing routes.
-     *
-     * @param  string  $uniqueKeyValue
-     * @return array
-     */
-    static function getRoutes($uniqueKeyValue) {
-        return [
-            '/' . self::$folderName,
-            '/' . self::$folderName . '/' . $uniqueKeyValue
         ];
     }
 
@@ -88,9 +61,10 @@ class StockTest extends TestCase
     {
         // Declared in trait
         self::init(['symbol', 'name', 'data_source_id']);
-        self::$uniqueKey = 'symbol';
-        // For convenience the editKey will be used for deletion test as well, deletion must be the last test
-        self::$editKey = 'AAPL';
+        self::$primaryKey = 'symbol';
+        self::$uniqueKey = self::$primaryKey;
+        // For convenience the editKeyValue will be used for deletion test as well, deletion must be the last test
+        self::$editKeyValue = 'AAPL';
 
         self::createDatasets();
     }
