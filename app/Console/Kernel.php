@@ -24,8 +24,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('inspire')
-                 ->hourly();
+        $schedule
+            ->command('inspire')
+            ->timezone('America/New_York')
+            ->between('8:45', '10:45')
+            ->everyFiveMinutes()
+            ->withoutOverlapping()
+            ->appendOutputTo('cron.log');
     }
 
     /**
