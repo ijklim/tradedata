@@ -39,6 +39,7 @@
                         </div>
                         <div class="card-body">
                             <div>{{ $item->name }}</div>
+                            <div>Data Source: {{ optional($item->dataSource()->get()->first())->domain_name }}</div>
                             <div>Available Prices: {{ $item->stockprices()->get()->count() }}</div>
                         </div>
                         <div class="card-footer">

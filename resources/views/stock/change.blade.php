@@ -31,8 +31,17 @@
                                 'required' => 'true'
                             ]
                         );
+                        echo Form::bootstrapSelect(
+                            'data_source_id',
+                            $mode == 'edit' ? $item->data_source_id : null,
+                            'data_source',
+                            \App\DataSource::all()
+                        );
 
-                        echo Form::submit($mode == 'create' ? 'Add' : 'Save', ['class' => 'btn btn-primary float-right']);
+                        echo "<div class='form-group'>";
+                        echo Form::button('Cancel', ['class' => 'btn float-right', 'onclick' => 'history.back()']);
+                        echo Form::submit($mode == 'create' ? 'Add' : 'Save', ['class' => 'btn btn-primary float-right mr-2']);
+                        echo '</div>';
                     echo Form::close();
                 @endphp
             </div>
