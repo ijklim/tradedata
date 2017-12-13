@@ -11,6 +11,7 @@ class StockTest extends TestCase
     /**
      * Create array with field name and value.
      *
+     * @param  primary  $parameter1, $parameter2, $parameter3...
      * @return array
      */
     static function constructDataset(...$parameters) {
@@ -68,6 +69,7 @@ class StockTest extends TestCase
     /**
      * Create array with testing routes.
      *
+     * @param  string  $uniqueKeyValue
      * @return array
      */
     static function getRoutes($uniqueKeyValue) {
@@ -94,109 +96,24 @@ class StockTest extends TestCase
     }
 
     /**
+     * Special transformation required for the unique key.
+     *
+     * @param  string  $value
+     * @return void
+     */
+    static function uniqueKeyTransform($value) {
+        return strtoupper($value);
+    }
+
+    /**
      * Test Stock related functions.
      *
      * @return void
      */
     public function testStock()
     {
-        foreach (self::$datasets['valid'] as $dataset) {
-            $uniqueKeyValue = $dataset[self::$uniqueKey];
-            foreach (self::getRoutes($uniqueKeyValue) as $route) {
-                // Testing .show and .index, data should not exist
-                $this->get($route)
-                    ->assertDontSee($dataset[reset(self::$fieldNames)])
-                    ->assertDontSee($dataset[next(self::$fieldNames)]);
-            }
-
-            // Check dataset should NOT be in table
-            $this->assertDatabaseMissing(self::$tableName, $dataset);
-
-            // Testing .store, adding data to table, success will redirect to .index page
-            $this->json('POST', '/' . self::$folderName, $dataset)
-                ->assertSessionHas('success')
-                ->assertRedirect(self::$folderName);
-            
-            // Dataset should now be in the table
-            $this->assertDatabaseHas(self::$tableName, $dataset);
-
-            foreach (self::getRoutes($uniqueKeyValue) as $route) {
-                // Testing .show displays added data, first 2 fields
-                $this->get($route)
-                    ->assertSee($dataset[reset(self::$fieldNames)])
-                    ->assertSee($dataset[next(self::$fieldNames)]);
-            }
-
-            // Test .edit page is available, check field contains default value
-            // Note: This has to run before key violation edit test, otherwise the duplicate key will show with error message, result expected
-            $this->get('/' . self::$folderName . '/' . $uniqueKeyValue . '/edit')
-                ->assertStatus(200)
-                ->assertSee('value="' . $dataset[reset(self::$fieldNames)] . '"')
-                ->assertSee('value="' . $dataset[next(self::$fieldNames)] . '"');
-        }
-
-        // Ensure duplicates cannot be entered, fails validation
-        foreach (self::$datasets['valid'] as $dataset) {
-            $this->json('POST', '/' . self::$folderName, $dataset)
-                ->assertStatus(422);
-        }
-
-        // Data violates certain validation rule, should return error
-        foreach (self::$datasets['invalid'] as $dataset) {
-            $this->json('POST', '/' . self::$folderName, $dataset)
-                ->assertStatus(422);
-        }
-        
-        // Invalid update checks
-        $route = '/' . self::$folderName . '/' . self::$editKey;
-        // datasets from both 'invalid' and 'invalid-edit'
-        $datasets = array_collapse(array_only(self::$datasets, ['invalid', 'invalid-edit']));
-        foreach ($datasets as $dataset) {
-            $this->json('PUT', $route, $dataset)
-                ->assertStatus(422);
-        }
-
-        // Valid edit test, note route might change after update due to unique key update
-        // Running this right after invalid update check the previous $route should still be valid
-        foreach (self::$datasets['valid-edit'] as $dataset) {
-            // This is required for SQLite as key is case sensitive
-            $datasetTableCheck = array_merge($dataset, [self::$uniqueKey => strtoupper($dataset[self::$uniqueKey])]);
-            // New data should NOT be in the table
-            $this->assertDatabaseMissing(self::$tableName, $datasetTableCheck);
-
-            $this->json('PUT', $route, $dataset)
-                ->assertSessionHas('success')
-                ->assertRedirect(self::$folderName);
-        
-            // New data should now be in the table
-            $this->assertDatabaseHas(self::$tableName,  $datasetTableCheck);
-            
-            // Data should appear on index page
-            $this->get('/' . self::$folderName)
-                ->assertSee($datasetTableCheck[reset(self::$fieldNames)])
-                ->assertSee($datasetTableCheck[next(self::$fieldNames)]);
-
-            // Construct new route in case unique key value has changed
-            $route = '/' . self::$folderName . '/' . $datasetTableCheck[self::$uniqueKey];
-        }
-
-        // All rows should be in the table
-        foreach (array_pluck(self::$datasets['valid'], self::$uniqueKey) as $data) {
-            $this->assertDatabaseHas(self::$tableName, [self::$uniqueKey => $data]);
-        }
-        // Testing .destroy
-        $this->json('DELETE', '/' . self::$folderName . '/' . self::$editKey)
-            ->assertSessionHas('success')
-            ->assertRedirect(self::$folderName);
-        // Check table again
-        foreach (array_pluck(self::$datasets['valid'], self::$uniqueKey) as $data) {
-            if ($data == self::$editKey) {
-                // Deleted row should no longer be in the table
-                $this->assertDatabaseMissing(self::$tableName, [self::$uniqueKey => $data]);
-            } else {
-                // The other rows should remain
-                $this->assertDatabaseHas(self::$tableName, [self::$uniqueKey => $data]);
-            }
-        }
+        $this->runNewDataTests();
+        $this->runUpdateDataTests();
+        $this->runDeleteDataTests();
     }
 }
