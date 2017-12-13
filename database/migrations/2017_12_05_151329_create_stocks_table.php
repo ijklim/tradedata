@@ -16,6 +16,14 @@ class CreateStocksTable extends Migration
         Schema::create('stocks', function (Blueprint $table) {
             $table->string('symbol', 5)->primary();
             $table->string('name', 50);
+            $table
+                ->integer('data_source_id')
+                ->nullable();
+            $table
+                ->foreign('data_source_id')
+                ->references('id')
+                ->on('data_sources')
+                ->onUpdate('cascade');
             $table->timestamps();
         });
     }

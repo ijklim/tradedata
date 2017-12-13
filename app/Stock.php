@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Stock extends Model
 {
     protected $fillable = [
-        'symbol', 'name'
+        'symbol', 'name', 'data_source_id'
     ];
 
     // Required when primary key is not $id and not an incrementing number
@@ -16,6 +16,10 @@ class Stock extends Model
     protected $keyType = 'string';
 
     use \App\Traits\Model;
+
+    public function dataSource() {
+        return $this->belongsTo(DataSource::class, 'data_source_id');
+    }
 
     public function stockPrices()
     {

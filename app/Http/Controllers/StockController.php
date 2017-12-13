@@ -61,7 +61,8 @@ class StockController extends Controller
 
         $rules = [
             $uniqueFieldName => ['bail', 'required', $uniqueRule, 'max:5'],
-            'name' => 'required|min:5'
+            'name' => 'required|min:5',
+            'data_source_id' => ''
         ];
 
         return $rules;
@@ -132,7 +133,7 @@ class StockController extends Controller
         // Clean up input data
         $request = $this->cleanRequest($request);
         $validatedFields = $this->validate($request, $this->getRules($stock));
-
+// dd($validatedFields);
         try {
             $stock->update($validatedFields);
             // Show update info
