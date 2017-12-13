@@ -35,7 +35,7 @@ class StockController extends Controller
     private function cleanRequest(Request $request) {
         $uniqueFieldName = $this->uniqueFieldName;
         $request->merge([
-            $uniqueFieldName => strtoupper($request->$uniqueFieldName)
+            $uniqueFieldName => $this->className::formatField($uniqueFieldName, $request->$uniqueFieldName)
         ]);
         return $request;
     }

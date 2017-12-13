@@ -45,7 +45,7 @@ class StockTest extends TestCase
         self::$datasets['invalid-edit'] = [
             // Key violation: using 1st row unique key, check case insensitivity as well
             self::constructDataset(
-                self::uniqueKeyTransform(self::$datasets['valid'][0][self::$uniqueKey]),
+                self::$className::formatField(self::$uniqueKey, self::$datasets['valid'][0][self::$uniqueKey]),
                 'Apple a day',
                 1
             ),
@@ -67,16 +67,6 @@ class StockTest extends TestCase
         self::$editKeyValue = 'AAPL';
 
         self::createDatasets();
-    }
-
-    /**
-     * Special transformation required for the unique key.
-     *
-     * @param  string  $value
-     * @return void
-     */
-    static function uniqueKeyTransform($value) {
-        return strtoupper($value);
     }
 
     /**

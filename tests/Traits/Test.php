@@ -9,6 +9,7 @@ trait Test
     use RefreshDatabase;
     use \App\Traits\Model;
 
+    static $className;
     static $folderName;
     static $tableName;
     static $datasets;
@@ -24,6 +25,7 @@ trait Test
      * @return void
      */
     public static function init($fieldNames = []) {
+        self::$className = '\App\\' . self::getBaseClassName();
         self::$folderName = self::getFolderName();
         self::$tableName = self::getTableName();
         self::$fieldNames = $fieldNames;
@@ -124,7 +126,8 @@ trait Test
         // Running this right after invalid update check the previous $route should still be valid
         foreach (self::$datasets['valid-edit'] as $dataset) {
             // This is required for SQLite as key is case sensitive
-            $datasetTableCheck = array_merge($dataset, [self::$uniqueKey => self::uniqueKeyTransform($dataset[self::$uniqueKey])]);
+            $uniqueKeySetting = [self::$uniqueKey => self::$className::formatField(self::$uniqueKey, $dataset[self::$uniqueKey])];
+            $datasetTableCheck = array_merge($dataset, $uniqueKeySetting);
             // New data should NOT be in the table
             $this->assertDatabaseMissing(self::$tableName, $datasetTableCheck);
 
