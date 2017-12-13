@@ -17,6 +17,7 @@ class AppServiceProvider extends ServiceProvider
         // 'components.form.text' refers to resources/views/components/form/text.blade.php
         // e.g. Form::bootstrapText('symbol', null, ['placeholder' => 'symbol, e.g. QQQ'])
         \Form::component('bootstrapText', 'components.form.text', ['name', 'value', 'attributes']);
+        \Form::component('bootstrapSelect', 'components.form.select', ['name', 'value' => null, 'label', 'options', 'attributes' => []]);
     }
 
     /**
