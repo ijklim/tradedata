@@ -27,20 +27,6 @@ class StockController extends Controller
     }
 
     /**
-     * Clean up Form input values if necessary.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Request
-     */
-    private function cleanRequest(Request $request) {
-        $uniqueFieldName = $this->uniqueFieldName;
-        $request->merge([
-            $uniqueFieldName => $this->className::formatField($uniqueFieldName, $request->$uniqueFieldName)
-        ]);
-        return $request;
-    }
-
-    /**
      * Get rules for adding a new record or updating a record.
      *
      * @param  Stock  $item
@@ -76,17 +62,16 @@ class StockController extends Controller
      */
     public function store(Request $request)
     {
-        $uniqueFieldName = $this->uniqueFieldName;
-
-        // Clean up input data
-        $request = $this->cleanRequest($request);
+        $request->merge($this->getFormattedInputs($request));
         $validatedFields = $this->validate($request, $this->getRules());
 
         try {
             $this->className::create($validatedFields);
-            return redirect()->route($this->folderName . '.index')->with('success', $request->$uniqueFieldName.' added successfully.');
+            return redirect()
+                    ->route($this->folderName . '.index')
+                    ->with('success', $request->input($this->uniqueFieldName).' added successfully.');
         } catch (\Exception $e) {
-            $errorMessage = $this->processError($e, $request->$uniqueFieldName);
+            $errorMessage = $this->processError($e, $request->input($this->uniqueFieldName));
             return back()->withInput()->with('error', $errorMessage);
         }
     }
@@ -128,18 +113,17 @@ class StockController extends Controller
      */
     public function update(Request $request, Stock $stock)
     {
-        $uniqueFieldName = $this->uniqueFieldName;
-
-        // Clean up input data
-        $request = $this->cleanRequest($request);
+        $request->merge($this->getFormattedInputs($request));
         $validatedFields = $this->validate($request, $this->getRules($stock));
-// dd($validatedFields);
+
         try {
             $stock->update($validatedFields);
             // Show update info
-            return redirect()->route($this->folderName . '.index')->with('success', $request->$uniqueFieldName . ' updated successfully.');
+            return redirect()
+                    ->route($this->folderName . '.index')
+                    ->with('success', $request->input($this->uniqueFieldName) . ' updated successfully.');
         } catch (\Exception $e) {
-            $errorMessage = $this->processError($e, $request->$uniqueFieldName);
+            $errorMessage = $this->processError($e, $request->input($this->uniqueFieldName));
             // Back to edit page
             return back()->withInput()->with('error', $errorMessage);
         }

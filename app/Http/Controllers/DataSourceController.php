@@ -24,20 +24,6 @@ class DataSourceController extends Controller
         // First field is the unique field
         $this->uniqueFieldName = 'domain_name';
     }
-    
-    /**
-     * Clean up Form input values if necessary.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Request
-     */
-    private function cleanRequest(Request $request) {
-        $uniqueFieldName = $this->uniqueFieldName;
-        $request->merge([
-            $uniqueFieldName => $this->className::formatField($uniqueFieldName, $request->$uniqueFieldName)
-        ]);
-        return $request;
-    }
 
     /**
      * Get rules for adding a new record or updating a record.
@@ -74,17 +60,16 @@ class DataSourceController extends Controller
      */
     public function store(Request $request)
     {
-        $uniqueFieldName = $this->uniqueFieldName;
-
-        // Clean up input data
-        $request = $this->cleanRequest($request);
+        $request->merge($this->getFormattedInputs($request));
         $validatedFields = $this->validate($request, $this->getRules());
 
         try {
             $this->className::create($validatedFields);
-            return redirect()->route($this->folderName . '.index')->with('success', $request->$uniqueFieldName.' added successfully.');
+            return redirect()
+                    ->route($this->folderName . '.index')
+                    ->with('success', $request->input($this->uniqueFieldName).' added successfully.');
         } catch (\Exception $e) {
-            $errorMessage = $this->processError($e, $request->$uniqueFieldName);
+            $errorMessage = $this->processError($e, $request->input($this->uniqueFieldName));
             return back()->withInput()->with('error', $errorMessage);
         }
     }
@@ -123,18 +108,17 @@ class DataSourceController extends Controller
      */
     public function update(Request $request, DataSource $dataSource)
     {
-        $uniqueFieldName = $this->uniqueFieldName;
-
-        // Clean up input data
-        $request = $this->cleanRequest($request);
+        $request->merge($this->getFormattedInputs($request));
         $validatedFields = $this->validate($request, $this->getRules($dataSource));
         
         try {
             $dataSource->update($validatedFields);
             // Show update info
-            return redirect()->route($this->folderName . '.index')->with('success', 'Data Source #' . $dataSource->id . ' updated successfully.');
+            return redirect()
+                    ->route($this->folderName . '.index')
+                    ->with('success', $request->input($this->uniqueFieldName) . ' updated successfully.');
         } catch (\Exception $e) {
-            $errorMessage = $this->processError($e, $request->$uniqueFieldName);
+            $errorMessage = $this->processError($e, $request->input($this->uniqueFieldName));
             // Back to edit page
             return back()->withInput()->with('error', $errorMessage);
         }

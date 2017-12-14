@@ -51,6 +51,25 @@ trait Controller
     }
 
     /**
+     * Retrieve a list of Form input values that require formatting.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return array
+     */
+    private function getFormattedInputs(\Illuminate\Http\Request $request) {
+        // Convert request inputs into a collection
+        // Apply formatting to each field, formatField is a static function defined in the model
+        // Extract the fields that are different after formatting
+        return collect($request->input())
+                ->map(function ($item, $key) {
+                        return [$key => $this->className::formatField($key, $item)];
+                    })
+                ->collapse()
+                ->diffAssoc($request->input())
+                ->toArray();
+    }
+
+    /**
      * Process error and return appropriate message.
      *
      * @param  Exception  $error
