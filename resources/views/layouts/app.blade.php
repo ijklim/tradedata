@@ -54,7 +54,9 @@
     </div>
 
     <!-- For debugging purpose only -->
-    {{-- @include('debug1.screen') --}}
+    @debug
+        @include('debug.screen')
+    @enddebug
 
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}"></script>
