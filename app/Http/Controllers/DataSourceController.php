@@ -46,32 +46,10 @@ class DataSourceController extends Controller
 
         $rules = [
             $uniqueFieldName => ['bail', 'required', $uniqueRule, 'min:5'],
-            'api_base_url' => 'required|min:10'
+            'api_url' => 'required|min:10'
         ];
 
         return $rules;
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $request->merge($this->getFormattedInputs($request));
-        $validatedFields = $this->validate($request, $this->getRules());
-
-        try {
-            $this->className::create($validatedFields);
-            return redirect()
-                    ->route($this->folderName . '.index')
-                    ->with('success', $request->input($this->uniqueFieldName).' added successfully.');
-        } catch (\Exception $e) {
-            $errorMessage = $this->processError($e, $request->input($this->uniqueFieldName));
-            return back()->withInput()->with('error', $errorMessage);
-        }
     }
 
     /**

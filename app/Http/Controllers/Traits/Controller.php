@@ -36,6 +36,28 @@ trait Controller
     }
 
     /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(\Illuminate\Http\Request $request)
+    {
+        $request->merge($this->getFormattedInputs($request));
+        $validatedFields = $this->validate($request, $this->getRules());
+
+        try {
+            $this->className::create($validatedFields);
+            return redirect()
+                    ->route($this->folderName . '.index')
+                    ->with('success', $request->input($this->uniqueFieldName).' added successfully.');
+        } catch (\Exception $e) {
+            $errorMessage = $this->processError($e, $request->input($this->uniqueFieldName));
+            return back()->withInput()->with('error', $errorMessage);
+        }
+    }
+
+    /**
      * Return a set of parameters to be passed to a view.
      *
      * @return array
