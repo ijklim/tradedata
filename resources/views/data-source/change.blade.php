@@ -22,8 +22,8 @@
                             ]
                         );
                         echo Form::bootstrapText(
-                            'api_base_url',
-                            $mode == 'edit' ? $item->api_base_url : null,
+                            'api_url',
+                            $mode == 'edit' ? $item->api_url : null,
                             [
                                 'placeholder' => 'e.g. https://api.iextrading.com/1.0/stock/',
                                 'required' => 'true'

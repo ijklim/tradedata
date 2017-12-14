@@ -19,7 +19,7 @@
     // Declare common fields
     $itemFields = [
         'Domain Name' => 'domain_name',
-        'API Base Url' => 'api_base_url'
+        'API Url' => 'api_url'
     ];
 @endphp
 

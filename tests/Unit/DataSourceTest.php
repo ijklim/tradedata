@@ -52,7 +52,7 @@ class DataSourceTest extends TestCase
     static function setUpBeforeClass()
     {
         // Declared in trait
-        self::init(['domain_name', 'api_base_url']);
+        self::init(['domain_name', 'api_url']);
         self::$primaryKey = 'id';
         self::$uniqueKey = 'domain_name';
         // For convenience the editKeyValue will be used for deletion test as well, deletion must be the last test
