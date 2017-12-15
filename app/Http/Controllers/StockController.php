@@ -124,4 +124,16 @@ class StockController extends Controller
             return back()->with('error', $stock->getKeyValue() . ' cannot be deleted, please try again.');
         }
     }
+
+    public function collectData(Stock $stock) {
+        // Send request to remote api and retrieve json data
+        $dataSourceController = new \App\Http\Controllers\DataSourceController($stock->dataSource()->first());
+        return $dataSourceController->collectData($stock->dataSource()->first(), $stock);
+        // Process data
+
+                    // ->filter(function ($item, $key) {
+                    //     return $key == 'results';
+                    // });
+        return $json['status']['code'];
+    }
 }

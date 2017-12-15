@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DataSource;
+use App\Stock;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -117,5 +118,80 @@ class DataSourceController extends Controller
             // Back to edit page
             return back()->with('error', $dataSource->domain_name . ' cannot be deleted, please try again.');
         }
+    }
+
+    /**
+     * .
+     *
+     * @param  \App\DataSource  $dataSource
+     * @param  \App\Stock  $stock
+     * @return string
+     */
+    private function apiUrl(DataSource $dataSource, Stock $stock, $startDate, $endDate) {
+        $maxNoOfRecords = 3;
+        switch ($dataSource->domain_name) {
+            case 'barchart.com':
+                $url = 'https://marketdata.websol.barchart.com/getHistory.json' .
+                           '?apikey=' . env('BARCHART_API_KEY', '') .
+                           '&symbol=' . $stock->symbol .
+                           '&type=daily' .
+                           '&startDate=' . $startDate .
+                           '&endDate=' . $endDate .
+                           '&maxRecords=' . $maxNoOfRecords;
+                break;
+            default:
+                $url = '?';
+                break;
+        }
+        return $url; 
+    }
+
+    private function processData(DataSource $dataSource, $jsonResponse) {
+        switch ($dataSource->domain_name) {
+            case 'barchart.com':
+                if ($jsonResponse['status']['code'] == 200) {
+                    $stockPriceController = new \App\Http\Controllers\StockPriceController(
+                        new \App\StockPrice()
+                    );
+                    $noOfNewRecords = 0;
+                    foreach ($jsonResponse['results'] as $result) {
+                        $data = [
+                            'symbol' => $result['symbol'],
+                            'date' => $result['tradingDay'],
+                            'open' => $result['open'],
+                            'high' => $result['high'],
+                            'low' => $result['low'],
+                            'close' => $result['close'],
+                            'volume' => $result['volume'],
+                        ];
+                        if ($stockPriceController->insert($data)) {
+                            $noOfNewRecords++;
+                        }
+                    }
+                    return 'Rows created: ' . $noOfNewRecords . '/' . count($jsonResponse['results']);
+                } else {
+                    return 'Error: ' . $jsonResponse['status']['message'];
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    public function collectData(DataSource $dataSource, Stock $stock) {
+        // Send request to remote api and retrieve json data
+        $options = [
+            'curl' => [
+                CURLOPT_SSL_VERIFYPEER => 0
+            ]
+        ];
+        // TODO: Compute start and end date
+        $url = $this->apiUrl($dataSource, $stock, '20171212', '20171213');
+        $client = new \GuzzleHttp\Client();
+        $request = new \GuzzleHttp\Psr7\Request('GET', $url);
+        $promise = $client->sendAsync($request, $options)->then(function ($response) {
+            return json_decode($response->getBody(), true);
+        });
+        return $this->processData($dataSource, $promise->wait());
     }
 }

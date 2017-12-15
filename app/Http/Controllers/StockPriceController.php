@@ -3,83 +3,65 @@
 namespace App\Http\Controllers;
 
 use App\StockPrice;
-use Illuminate\Http\Request;
 
 class StockPriceController extends Controller
 {
+    use \App\Http\Controllers\Traits\Controller;
+    
     /**
-     * Display a listing of the resource.
+     * Create a new controller instance.
      *
-     * @return \Illuminate\Http\Response
+     * @param  StockPrice  $items
+     * @return void
      */
-    public function index()
+    public function __construct(StockPrice $items)
     {
-        //
+        $this->items = $items;
+        $this->className = get_class($items);
+        $this->folderName = $this->className::getFolderName();
+        // First field is the unique field
+        $this->uniqueFieldName = '';
+
+    }
+    
+    /**
+     * Get rules for adding a new record or updating a record.
+     *
+     * @param  StockPrice  $item
+     * @return string
+     */
+    private function getRules(StockPrice $item = null) {
+        $rules = [
+            'symbol' => 'required',
+            'date' => 'required|date',
+            'open' => 'numeric',
+            'high' => 'numeric',
+            'low' => 'numeric',
+            'close' => 'numeric',
+            'volume' => 'numeric'
+        ];
+
+        return $rules;
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Insert a newly created resource in storage.
+     * Different from store() as this method would not return to a user screen.
      *
-     * @return \Illuminate\Http\Response
+     * @param  array  $data
+     * @return boolean
      */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\StockPrice  $stockPrice
-     * @return \Illuminate\Http\Response
-     */
-    public function show(StockPrice $stockPrice)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\StockPrice  $stockPrice
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(StockPrice $stockPrice)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\StockPrice  $stockPrice
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, StockPrice $stockPrice)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\StockPrice  $stockPrice
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(StockPrice $stockPrice)
-    {
-        //
+    public function insert($data) {
+        try {
+            $request = request();
+            $request->merge($data);
+            $request->merge($this->getFormattedInputs($request));
+            $validatedFields = $this->validate($request, $this->getRules());
+            $this->className::create($validatedFields);
+            return true;
+        } catch (\Exception $e) {
+            // If insert fail, just return false
+            return false;
+        }
     }
 }
