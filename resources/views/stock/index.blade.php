@@ -48,23 +48,23 @@
                                     $buttonWrapperClass = 'col-3 px-1';
                                     $buttonClass = 'btn btn-block p-1';
                                 @endphp
-                                <!-- Prices -->
+                                <!-- Stock prices -->
                                 <div class='{{ $buttonWrapperClass }}'>
                                     <button
                                         class='{{ $buttonClass }} btn-primary'
-                                        onclick='window.location = "/stock-price/{{ $item->symbol }}"'
+                                        onclick='window.location = "/{!! $folderName !!}/{{ $item->symbol }}"'
                                     >
                                         Prices
                                     </button>
                                 </div>
 
-                                <!-- Single stock only -->
+                                <!-- Raw json data -->
                                 <div class='{{ $buttonWrapperClass }}'>
                                     <button
                                         class='{{ $buttonClass }}'
-                                        onclick='window.location = "/{!! $folderName !!}/{{ $item->symbol }}"'
+                                        onclick='window.location = "/stock-price/{{ $item->symbol }}"'
                                     >
-                                        Show
+                                        Json
                                     </button>
                                 </div>
 

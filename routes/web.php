@@ -10,16 +10,10 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-
 Route::get('/', 'StockController@index');
 
 Route::resource('stock', StockController::class);
 Route::resource('data-source', DataSourceController::class);
 
-Route::resource(
-    'stock-price',
-    StockPriceController::class,
-    [
-        'only' => ['index', 'show']
-    ]
-);
+// Api that returns json
+Route::get('/stock-price/{stock}', 'StockPriceController@show');

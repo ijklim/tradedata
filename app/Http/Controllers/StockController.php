@@ -63,8 +63,8 @@ class StockController extends Controller
     public function show(Stock $stock)
     {
         return view(
-            $this->folderName . '.index',
-            $this->getViewParameters(['items' => array($stock)])
+            $this->folderName . '.show',
+            $this->getViewParameters(['item' => $stock])
         );
     }
 

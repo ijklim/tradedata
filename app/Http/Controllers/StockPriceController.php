@@ -45,6 +45,21 @@ class StockPriceController extends Controller
     }
 
     /**
+     * Return prices for a particular stock in json format.
+     *
+     * @param  Stock  $item
+     * @return \Illuminate\Http\Response
+     */
+    public function show(\App\Stock $stock)
+    {
+        $items = StockPrice::where('symbol', $stock->symbol)->get();
+        return view(
+            $this->folderName . '.show',
+            $this->getViewParameters(compact('items'))
+        );
+    }
+
+    /**
      * Insert a newly created resource in storage.
      * Different from store() as this method would not return to a user screen.
      *
