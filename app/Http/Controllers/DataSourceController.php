@@ -32,7 +32,8 @@ class DataSourceController extends Controller
      * @param  DataSource  $item
      * @return string
      */
-    private function getRules(DataSource $item = null) {
+    private function getRules(DataSource $item = null)
+    {
         $uniqueFieldName = $this->uniqueFieldName;
         
         // Construct 'unique' rule
@@ -127,7 +128,8 @@ class DataSourceController extends Controller
      * @param  \App\Stock  $stock
      * @return string
      */
-    private function apiUrl(DataSource $dataSource, Stock $stock, $startDate, $endDate) {
+    private function apiUrl(DataSource $dataSource, Stock $stock, $startDate, $endDate)
+    {
         $maxNoOfRecords = 3;
         switch ($dataSource->domain_name) {
             case 'barchart.com':
@@ -146,7 +148,8 @@ class DataSourceController extends Controller
         return $url; 
     }
 
-    private function processData(DataSource $dataSource, $jsonResponse) {
+    private function processData(DataSource $dataSource, $jsonResponse)
+    {
         switch ($dataSource->domain_name) {
             case 'barchart.com':
                 if ($jsonResponse['status']['code'] == 200) {
@@ -168,7 +171,7 @@ class DataSourceController extends Controller
                             $noOfNewRecords++;
                         }
                     }
-                    return 'Rows created: ' . $noOfNewRecords . '/' . count($jsonResponse['results']);
+                    return 'Data records added: ' . $noOfNewRecords . '/' . count($jsonResponse['results']);
                 } else {
                     return 'Error: ' . $jsonResponse['status']['message'];
                 }
@@ -178,7 +181,8 @@ class DataSourceController extends Controller
         }
     }
 
-    public function collectData(DataSource $dataSource, Stock $stock) {
+    public function collectData(DataSource $dataSource, Stock $stock, $startDate, $endDate)
+    {
         // Send request to remote api and retrieve json data
         $options = [
             'curl' => [
@@ -186,7 +190,7 @@ class DataSourceController extends Controller
             ]
         ];
         // TODO: Compute start and end date
-        $url = $this->apiUrl($dataSource, $stock, '20171212', '20171213');
+        $url = $this->apiUrl($dataSource, $stock, $startDate, $endDate);
         $client = new \GuzzleHttp\Client();
         $request = new \GuzzleHttp\Psr7\Request('GET', $url);
         $promise = $client->sendAsync($request, $options)->then(function ($response) {

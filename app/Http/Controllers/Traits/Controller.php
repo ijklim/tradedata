@@ -62,7 +62,8 @@ trait Controller
      *
      * @return array
      */
-    private function getViewParameters($parameters = []) {
+    private function getViewParameters($parameters = [])
+    {
         return array_merge(
             [
                 'folderName' => $this->folderName,                                  // e.g. data-source 
@@ -78,7 +79,8 @@ trait Controller
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    private function getFormattedInputs(\Illuminate\Http\Request $request) {
+    private function getFormattedInputs(\Illuminate\Http\Request $request)
+    {
         // Convert request inputs into a collection
         // Apply formatting to each field, formatField is a static function defined in the model
         // Extract the fields that are different after formatting
@@ -98,7 +100,8 @@ trait Controller
      * @param  string  $symbol
      * @return string
      */
-    private function processError($error, $key) {
+    private function processError($error, $key)
+    {
         $errorUniqueViolation = 'UNIQUE constraint failed: ';
         if ($error instanceof \Illuminate\Database\QueryException) {
             switch (substr($error->errorInfo[2], 0, strlen($errorUniqueViolation))) {

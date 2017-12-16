@@ -66,7 +66,8 @@ class StockPriceController extends Controller
      * @param  array  $data
      * @return boolean
      */
-    public function insert($data) {
+    public function insert($data)
+    {
         try {
             $request = request();
             $request->merge($data);

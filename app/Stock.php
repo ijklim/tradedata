@@ -35,7 +35,8 @@ class Stock extends Model
         }
     }
 
-    public function dataSource() {
+    public function dataSource()
+    {
         return $this->belongsTo(DataSource::class, 'data_source_id');
     }
 
