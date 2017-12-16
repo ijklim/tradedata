@@ -130,16 +130,20 @@ class DataSourceController extends Controller
      */
     private function apiUrl(DataSource $dataSource, Stock $stock, $startDate, $endDate)
     {
-        $maxNoOfRecords = 3;
         switch ($dataSource->domain_name) {
             case 'barchart.com':
                 $url = 'https://marketdata.websol.barchart.com/getHistory.json' .
-                           '?apikey=' . env('BARCHART_API_KEY', '') .
-                           '&symbol=' . $stock->symbol .
-                           '&type=daily' .
-                           '&startDate=' . $startDate .
-                           '&endDate=' . $endDate .
-                           '&maxRecords=' . $maxNoOfRecords;
+                       '?apikey=' . env('BARCHART_API_KEY', '') .
+                       '&symbol=' . $stock->symbol .
+                       '&type=daily' .
+                       '&startDate=' . $startDate .
+                       '&endDate=' . $endDate;
+                        //    '&maxRecords=' . $maxNoOfRecords;
+                break;
+            case 'iextrading.com':
+                $url = 'https://api.iextrading.com/1.0/stock/' . 
+                       $stock->symbol .
+                       '/chart/1m';
                 break;
             default:
                 $url = '?';
@@ -148,18 +152,18 @@ class DataSourceController extends Controller
         return $url; 
     }
 
-    private function processData(DataSource $dataSource, $jsonResponse)
+    private function processData(DataSource $dataSource, Stock $stock, $jsonResponse)
     {
+        $noOfNewRecords = 0;
+        $stockPriceController = new \App\Http\Controllers\StockPriceController(
+            new \App\StockPrice()
+        );
         switch ($dataSource->domain_name) {
             case 'barchart.com':
                 if ($jsonResponse['status']['code'] == 200) {
-                    $stockPriceController = new \App\Http\Controllers\StockPriceController(
-                        new \App\StockPrice()
-                    );
-                    $noOfNewRecords = 0;
                     foreach ($jsonResponse['results'] as $result) {
                         $data = [
-                            'symbol' => $result['symbol'],
+                            'symbol' => $stock->symbol,
                             'date' => $result['tradingDay'],
                             'open' => $result['open'],
                             'high' => $result['high'],
@@ -174,6 +178,22 @@ class DataSourceController extends Controller
                     return 'Data records added: ' . $noOfNewRecords . '/' . count($jsonResponse['results']);
                 } else {
                     return 'Error: ' . $jsonResponse['status']['message'];
+                }
+                break;
+            case 'iextrading.com':
+                foreach ($jsonResponse as $key => $result) {
+                    $data = [
+                        'symbol' => $stock->symbol,
+                        'date' => $result['date'],
+                        'open' => $result['open'],
+                        'high' => $result['high'],
+                        'low' => $result['low'],
+                        'close' => $result['close'],
+                        'volume' => $result['volume'],
+                    ];
+                    if ($stockPriceController->insert($data)) {
+                        $noOfNewRecords++;
+                    }
                 }
                 break;
             default:
@@ -196,6 +216,6 @@ class DataSourceController extends Controller
         $promise = $client->sendAsync($request, $options)->then(function ($response) {
             return json_decode($response->getBody(), true);
         });
-        return $this->processData($dataSource, $promise->wait());
+        return $this->processData($dataSource, $stock, $promise->wait());
     }
 }

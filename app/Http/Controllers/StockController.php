@@ -125,15 +125,36 @@ class StockController extends Controller
         }
     }
 
-    public function collectData(Stock $stock) {
-        // Send request to remote api and retrieve json data
-        $dataSourceController = new \App\Http\Controllers\DataSourceController($stock->dataSource()->first());
-        return $dataSourceController->collectData($stock->dataSource()->first(), $stock);
-        // Process data
+    public static function collectData(Stock $stock, $startDate = null, $endDate = null)
+    {
+        $defaultDate = '1960-01-01';
+        $date_format_url = 'Ymd';
+        $date_format_display = 'M j, Y';
 
-                    // ->filter(function ($item, $key) {
-                    //     return $key == 'results';
-                    // });
-        return $json['status']['code'];
+        // Determine start and end date
+        $maxDate = new \DateTime($stock->stockPrices()->max('date') ?? $defaultDate);
+        $yesterday = (new \DateTime())->sub(new \DateInterval('P1D')); 
+
+        if ($yesterday > $maxDate) {
+            $noOfDays = 50;
+
+            // Compute start date
+            $maxDate->add(new \DateInterval('P1D'));
+            $startDate = $maxDate->format($date_format_url);
+
+            // Compute end date
+            $maxDate->add(new \DateInterval('P' . $noOfDays . 'D'));
+            $endDate = $maxDate->format($date_format_url);
+// return $startDate . '|' . $endDate;
+            // Send request to remote api and retrieve json data
+            $dataSourceController = new \App\Http\Controllers\DataSourceController($stock->dataSource()->first());
+            return $dataSourceController->collectData($stock->dataSource()->first(), $stock, $startDate, $endDate);
+        } else {
+            // Latest price data available up to yesterday
+            // If maxDate = yesterday then there is nothing to collect
+            return 'Latest data for ' . $stock->symbol . ' from ' .
+                   $maxDate->format($date_format_display) .
+                   ' has already been collected';
+        }     
     }
 }

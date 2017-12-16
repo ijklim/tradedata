@@ -29,4 +29,9 @@ class StockPrice extends Model
                 break;
         }
     }
+    
+    public function stock()
+    {
+        return $this->belongsTo(\App\Stock::class, 'symbol');
+    }
 }
